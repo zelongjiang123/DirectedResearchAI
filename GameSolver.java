@@ -1,6 +1,8 @@
 import java.util.Arrays;
 import java.util.Random;
 
+import javax.swing.JFrame;
+
 class GameOutcome{
     double payoff_1, payoff_2;
     double[] ratio_1;
@@ -449,10 +451,13 @@ public class GameSolver {
      * find the players' actions based on their start position
      * it should be called after learning process is complete
      * @param startPosition
+     * @return array of positions
      */
-    public void findActions(int[] startPosition){
+    public int[][] findActions(int[] startPosition){
         printPositions(startPosition);
         final int ITERATIONS = 10;
+        int[][] positions = new int[ITERATIONS+1][startPosition.length];
+        positions[0] = Arrays.copyOf(startPosition, startPosition.length);
         for (int i = 0; i < ITERATIONS; i++) {
             double[][][] payoff_matrix = constructPayoffMatrix(startPosition);
             double[][] payoff_matrix_1 = payoff_matrix[0], payoff_matrix_2 = payoff_matrix[1];
@@ -463,13 +468,22 @@ public class GameSolver {
 
             startPosition = calculateNextPositions(startPosition, new int[] {strategy1, strategy2});
             printPositions(startPosition);
+            positions[i+1] = Arrays.copyOf(startPosition, startPosition.length);
         }
+        return positions;
     }
 
     public static void main(String[] args) {
         GameSolver gameSolver = new GameSolver();
         // gameSolver.testCalculateNash();
         gameSolver.learning();
-        gameSolver.findActions(new int[] {0, 0, 2, 2});
+        int[][] positions = gameSolver.findActions(new int[] {0, 0, 2, 2});
+        
+        JFrame frame = new JFrame("3x3 Grid with Moving Cars");
+        GameVisualization panel = new GameVisualization(positions, gameSolver.REWARD);
+        frame.add(panel);
+        frame.setSize(GameVisualization.GRID_SIZE * GameVisualization.CELL_SIZE + 15, GameVisualization.GRID_SIZE * GameVisualization.CELL_SIZE + 40);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
     }
 }
