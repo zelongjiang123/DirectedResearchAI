@@ -17,6 +17,7 @@ class GameOutcome{
 public class GameSolver {
 
     // 0: up, 1: down, 2: left, 3: right
+    // both Qs have the same format: [player 1 row][player 1 col][player 2 row][player 2 col][player 1 action][player 2 action]
     double[][][][][][] Q1; // matrix for player 1
     double[][][][][][] Q2; // matrix for player 2
 
@@ -182,6 +183,11 @@ public class GameSolver {
         return new GameOutcome(payoff_1, payoff_2, ratio_1, ratio_2);
     }
 
+    /**
+     * transpose a given matrix
+     * @param matrix
+     * @return
+     */
     public static double[][] transpose(double[][] matrix) {
         int rows = matrix.length;
         int cols = matrix[0].length;
@@ -195,6 +201,10 @@ public class GameSolver {
         return transposed;
     }
 
+
+    /**
+     * test the calculateNash function
+     */
     public void testCalculateNash() {
         /**
          * (0, 0), (-1, 1), (1, -1)
@@ -214,6 +224,12 @@ public class GameSolver {
         calculateNash(matrix_1, transpose(matrix_2), false);
     }
 
+    /**
+     * find the nex positions given the current positions and players' actions
+     * @param positions
+     * @param actions
+     * @return
+     */
     public int[] calculateNextPositions(int[] positions, int actions[]) {
         int[] nextPositions = Arrays.copyOf(positions, positions.length);
         for (int i = 0; i < actions.length; i++) {
@@ -258,6 +274,11 @@ public class GameSolver {
         return new double[][][] { payoff_1, payoff_2 };
     }
 
+    /**
+     * generate a temporary copy for a given Q
+     * @param Q
+     * @return
+     */
     public double[][][][][][] generateTempCopy(double[][][][][][] Q) {
         double[][][][][][] temp_Q = new double[Q.length][Q[0].length][Q[0][0].length][Q[0][0][0].length][Q[0][0][0][0].length][Q[0][0][0][0][0].length];
         for (int row1 = 0; row1 < Q.length; row1++)
@@ -273,6 +294,10 @@ public class GameSolver {
         return temp_Q;
     }
 
+    /**
+     * print the values in Q
+     * @param Q
+     */
     public void printQ(double[][][][][][] Q) {
         for (int row1 = 0; row1 < Q.length; row1++)
             for (int col1 = 0; col1 < Q[0].length; col1++)
@@ -288,6 +313,13 @@ public class GameSolver {
 
     }
 
+
+    /**
+     * update Q based on Nash
+     * @param Q
+     * @param player
+     * @return
+     */
     public double[][][][][][] updateQ(double[][][][][][] Q, int player) {
         double[][][][][][] temp_Q = generateTempCopy(Q);
         for (int row1 = 0; row1 < Q.length; row1++)
@@ -345,6 +377,9 @@ public class GameSolver {
         return temp_Q;
     }
 
+    /**
+     * learn the Q value
+     */
     public void learning() {
         final int ITERATIONS = 100;
         for (int i = 0; i < ITERATIONS; i++) {
@@ -365,6 +400,12 @@ public class GameSolver {
         // printQ(Q1);
     }
 
+
+    /**
+     * choose player action based on the probabilities
+     * @param probabilities
+     * @return
+     */
     public int chooseActionBasedOnProbability(double[] probabilities){
         // Compute cumulative probabilities
         double[] cumulative = new double[probabilities.length];
@@ -404,6 +445,11 @@ public class GameSolver {
         }
     }
 
+    /**
+     * find the players' actions based on their start position
+     * it should be called after learning process is complete
+     * @param startPosition
+     */
     public void findActions(int[] startPosition){
         printPositions(startPosition);
         final int ITERATIONS = 10;
