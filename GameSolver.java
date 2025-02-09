@@ -26,7 +26,7 @@ public class GameSolver {
      * 1 1 2
      * 3 1 2
      */
-    // final int[][] REWARD = new int[][] { { 1, 2, 3 }, { 1, 1, 2 }, { 3, 1, 2 } };
+    final int[][] REWARD = new int[][] { { 1, 2, 3 }, { 1, 1, 2 }, { 3, 1, 2 } };
 
     // reward matrix is
     /*
@@ -34,9 +34,9 @@ public class GameSolver {
      * 1 1 1
      * 1 1 1
      */
-    final int[][] REWARD = new int[][] { { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } };
+    // final int[][] REWARD = new int[][] { { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } };
 
-    
+
     final int CRASH = 10;
     final double DISCOUNT = 0.9;
     final double SMALL_NUM = -10000.0;
@@ -99,8 +99,8 @@ public class GameSolver {
         double max = payoffs[0][0];
         int index = 0;
         for (int i = 1; i < payoffs.length; i++) {
-            if(print)
-                System.out.println(max + " " + payoffs[i][0]);
+            // if(print && payoffs[i][0] != SMALL_NUM)
+            //     System.out.println(max + " " + payoffs[i][0]);
             if (max < payoffs[i][0]) {
                 max = payoffs[i][0];
                 index = i;
@@ -125,9 +125,17 @@ public class GameSolver {
         int count = 1; // track the number of total history strategies (both player should have the
                        // same count)
 
-        // start with an arbitrary strategy 0, 0
-        strategy1[0] = 1;
-        strategy2[0] = 1;
+        // start with a valid strategy (will not go out of bound)
+        outerLoop:
+        for(int i=0; i<matrix_1.length; i++)
+            for(int j=0; j<matrix_1[0].length; j++){
+                if(matrix_1[i][j] != SMALL_NUM && matrix_2[j][i] != SMALL_NUM){
+                    strategy1[i] = 1;
+                    strategy2[j] = 1;
+                    break outerLoop;
+                }
+                    
+            }
 
         final int ITERATIONS = 1000;
         for (int i = 0; i < ITERATIONS; i++) {
@@ -290,6 +298,9 @@ public class GameSolver {
                         for (int action1 = 0; action1 < Q[0][0][0][0].length; action1++)
                             for (int action2 = 0; action2 < Q[0][0][0][0][0].length; action2++) {
                                 int reward = REWARD[row1][col1] - REWARD[row2][col2];
+                                if(player == 2){
+                                    reward = REWARD[row2][col2] - REWARD[row1][col1];
+                                }
                                 if (row1 == row2 && col1 == col2) {
                                     if (player == 1)
                                         reward += CRASH;
@@ -347,11 +358,11 @@ public class GameSolver {
             System.out.println("Iteration " + i + " is complete");
         }
 
-        System.out.println("Q1");
-        printQ(Q1);
+        // System.out.println("Q1");
+        // printQ(Q1);
 
-        System.out.println("Q2");
-        printQ(Q1);
+        // System.out.println("Q2");
+        // printQ(Q1);
     }
 
     public int chooseActionBasedOnProbability(double[] probabilities){
