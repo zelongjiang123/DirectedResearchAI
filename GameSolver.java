@@ -3,19 +3,6 @@ import java.util.Random;
 
 import javax.swing.JFrame;
 
-class GameOutcome{
-    double payoff_1, payoff_2;
-    double[] ratio_1;
-    double[] ratio_2;
-
-    public GameOutcome(double payoff_1, double payoff_2, double[] ratio_1, double[] ratio_2){
-        this.payoff_1 = payoff_1;
-        this.payoff_2 = payoff_2;
-        this.ratio_1 = ratio_1;
-        this.ratio_2 = ratio_2;
-    }
-}
-
 public class GameSolver {
 
     // 0: up, 1: down, 2: left, 3: right
@@ -47,183 +34,6 @@ public class GameSolver {
     public GameSolver() {
         Q1 = new double[3][3][3][3][4][4];
         Q2 = new double[3][3][3][3][4][4];
-    }
-
-    /**
-     * returns the result of A * B
-     * 
-     * @param A
-     * @param B
-     * @return
-     */
-    public double[][] matrixMultiplication(double[][] A, double[][] B) {
-        int m = A.length; // Rows in A
-        int n = A[0].length; // Columns in A (must match rows in B)
-        int p = B[0].length; // Columns in B
-
-        if (B.length != n) {
-            throw new IllegalArgumentException("Invalid matrix dimensions for multiplication.");
-        }
-
-        double[][] C = new double[m][p]; // Result matrix
-
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < p; j++) {
-                C[i][j] = 0.0; // Initialize cell
-                for (int k = 0; k < n; k++) {
-                    // if(A[i][k] == Double.NEGATIVE_INFINITY || B[k][j] == Double.NEGATIVE_INFINITY){
-                    //     C[i][j] = Double.NEGATIVE_INFINITY;
-                    //     break;
-                    // }
-                    C[i][j] += A[i][k] * B[k][j];
-                }
-            }
-        }
-        return C;
-    }
-
-    /**
-     * calculate the best strategy for the row player
-     * 
-     * @param matrix            the matrix must be constructed such that the row
-     *                          player is the current player
-     * @param opponent_strategy column player strategy history
-     * @param count             total count of the history, in order to calculate
-     *                          the ratio of the strategy
-     * @return
-     */
-    public int calculateBestStrategy(double[][] matrix, int[] opponent_strategy, int count, boolean print) {
-        double[][] opponent_strategy_ratio = new double[opponent_strategy.length][1];
-        for (int i = 0; i < opponent_strategy.length; i++) {
-            opponent_strategy_ratio[i][0] = (double) opponent_strategy[i] / count;
-        }
-
-        double[][] payoffs = matrixMultiplication(matrix, opponent_strategy_ratio);
-        double max = payoffs[0][0];
-        int index = 0;
-        for (int i = 1; i < payoffs.length; i++) {
-            // if(print && payoffs[i][0] != SMALL_NUM)
-            //     System.out.println(max + " " + payoffs[i][0]);
-            if (max < payoffs[i][0]) {
-                max = payoffs[i][0];
-                index = i;
-            }
-        }
-
-        // System.out.println(index);
-
-        return index;
-    }
-
-    /**
-     * calculate the nash and return the expected payoff for both players
-     * 
-     * @param matrix_1
-     * @param matrix_2
-     * @return
-     */
-    public GameOutcome calculateNash(double[][] matrix_1, double[][] matrix_2, boolean print) {
-        int[] strategy1 = new int[matrix_1.length]; // strategy history of player 1 (row player)
-        int[] strategy2 = new int[matrix_2.length]; // strategy history of player 2 (column player)
-        int count = 1; // track the number of total history strategies (both player should have the
-                       // same count)
-
-        // start with a valid strategy (will not go out of bound)
-        outerLoop:
-        for(int i=0; i<matrix_1.length; i++)
-            for(int j=0; j<matrix_1[0].length; j++){
-                if(matrix_1[i][j] != SMALL_NUM && matrix_2[j][i] != SMALL_NUM){
-                    strategy1[i] = 1;
-                    strategy2[j] = 1;
-                    break outerLoop;
-                }
-                    
-            }
-
-        final int ITERATIONS = 1000;
-        for (int i = 0; i < ITERATIONS; i++) {
-            // calculate best response for player 1
-            int best_response_1 = calculateBestStrategy(matrix_1, strategy2, count, print);
-            // calculate best response for player 2
-            int best_response_2 = calculateBestStrategy(matrix_2, strategy1, count, print);
-
-            strategy1[best_response_1]++;
-            strategy2[best_response_2]++;
-
-            count++;
-        }
-
-        double[] ratio_1 = new double[matrix_1.length];
-        double[] ratio_2 = new double[matrix_2.length];
-        for (int i = 0; i < strategy1.length; i++) {
-            double ratio = strategy1[i] / (double) count;
-            // System.out.print(ratio + " ");
-            ratio_1[i] = ratio;
-        }
-        // System.out.println();
-        for (int i = 0; i < strategy2.length; i++) {
-            double ratio = strategy2[i] / (double) count;
-            // System.out.print(ratio + " ");
-            ratio_2[i] = ratio;
-        }
-        // System.out.println();
-
-        double payoff_1 = 0.0, payoff_2 = 0.0;
-        for (int i = 0; i < strategy1.length; i++)
-            for (int j = 0; j < strategy2.length; j++) {
-
-                if (matrix_1[i][j] != SMALL_NUM) {
-                    payoff_1 += ratio_1[i] * ratio_2[j] * matrix_1[i][j];
-                }
-                if (matrix_2[j][i] != SMALL_NUM) {
-                    payoff_2 += ratio_1[i] * ratio_2[j] * matrix_2[j][i];
-                }
-            }
-
-        // System.out.println("payoff 1 " + payoff_1);
-        // System.out.println("payoff 2 " + payoff_2);
-        return new GameOutcome(payoff_1, payoff_2, ratio_1, ratio_2);
-    }
-
-    /**
-     * transpose a given matrix
-     * @param matrix
-     * @return
-     */
-    public static double[][] transpose(double[][] matrix) {
-        int rows = matrix.length;
-        int cols = matrix[0].length;
-        double[][] transposed = new double[cols][rows]; // Swap dimensions
-
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                transposed[j][i] = matrix[i][j]; // Swap elements
-            }
-        }
-        return transposed;
-    }
-
-
-    /**
-     * test the calculateNash function
-     */
-    public void testCalculateNash() {
-        /**
-         * (0, 0), (-1, 1), (1, -1)
-         * (1, -1), (0, 0), (-1, 1)
-         * (-1, 1), (1, -1), (0, 0)
-         */
-        double[][] matrix_1 = { { 0, -1, 1 }, { 1, 0, -1 }, { -1, 1, 0 } };
-        double[][] matrix_2 = { { 0, 1, -1 }, { -1, 0, 1 }, { 1, -1, 0 } };
-
-        /**
-         * (2, 1), (0, 0)
-         * (0, 0), (1, 2)
-         */
-        // double[][] matrix_1 = { { 3, 1 }, { 0, 4 } };
-        // double[][] matrix_2 = { { 0, 1 }, { 0, 3 } };
-
-        calculateNash(matrix_1, transpose(matrix_2), false);
     }
 
     /**
@@ -367,7 +177,8 @@ public class GameSolver {
                                     double[][] payoff_matrix_1 = payoff_matrix[0],
                                             payoff_matrix_2 = payoff_matrix[1];
 
-                                    GameOutcome outcome = calculateNash(payoff_matrix_1, transpose(payoff_matrix_2), false);
+                                    NashGameSolver nashGameSolver = new NashGameSolver(SMALL_NUM);
+                                    GameOutcome outcome = nashGameSolver.calculateNash(payoff_matrix_1, MathUtils.transpose(payoff_matrix_2), false);
                                     double payoff = (player == 1) ? outcome.payoff_1 : outcome.payoff_2;
                                     temp_Q[row1][col1][row2][col2][action1][action2] = reward
                                             + DISCOUNT * payoff;
@@ -462,7 +273,8 @@ public class GameSolver {
             double[][][] payoff_matrix = constructPayoffMatrix(startPosition);
             double[][] payoff_matrix_1 = payoff_matrix[0], payoff_matrix_2 = payoff_matrix[1];
            // printPayoffMatrices(payoff_matrix_1, payoff_matrix_2);
-            GameOutcome outcome = calculateNash(payoff_matrix_1, transpose(payoff_matrix_2), false);
+            NashGameSolver nashGameSolver = new NashGameSolver(SMALL_NUM);
+            GameOutcome outcome = nashGameSolver.calculateNash(payoff_matrix_1, MathUtils.transpose(payoff_matrix_2), false);
             int strategy1 = chooseActionBasedOnProbability(outcome.ratio_1), 
             strategy2 = chooseActionBasedOnProbability(outcome.ratio_2);
 
