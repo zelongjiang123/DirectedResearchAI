@@ -60,14 +60,23 @@ public class NashGameSolver {
             max = Math.max(max, payoffs[i][0]);
         }
 
-        final double epsilon = 0.1;
-        // set the ratio of small payoff strategy to 0
-        for(int i=0; i<payoffs.length; i++){
-            double difference_ratio = Math.abs((max - payoffs[i][0]) / max);
-        //    System.out.println(max + " "  +  payoffs[i][0] + " " + difference_ratio);
-            if(difference_ratio > epsilon){
-                adjusted_ratio[i] = 0.0;
-                // System.out.println(i);
+        if (Math.abs(max) <= 0.1) {
+            for (int i = 0; i < payoffs.length; i++) {
+                if (Math.abs(payoffs[i][0]) >= 1) {
+                    adjusted_ratio[i] = 0.0;
+                    // System.out.println(i);
+                }
+            }
+        } else {
+            final double epsilon = 0.1;
+            // set the ratio of small payoff strategy to 0
+            for (int i = 0; i < payoffs.length; i++) {
+                double difference_ratio = Math.abs((max - payoffs[i][0]) / max);
+                // System.out.println(max + " " + payoffs[i][0] + " " + difference_ratio);
+                if (difference_ratio > epsilon) {
+                    adjusted_ratio[i] = 0.0;
+                    // System.out.println(i);
+                }
             }
         }
 
