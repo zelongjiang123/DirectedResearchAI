@@ -190,6 +190,22 @@ public class GameSolver {
         return temp_Q;
     }
 
+    public double calculateAverageQDifference(double[][][][][][] curr_Q, double[][][][][][] prev_Q){
+        int count = 0;
+        double total_diff = 0.0;
+        for (int row1 = 0; row1 < curr_Q.length; row1++)
+        for (int col1 = 0; col1 < curr_Q[0].length; col1++)
+            for (int row2 = 0; row2 < curr_Q[0][0].length; row2++)
+                for (int col2 = 0; col2 < curr_Q[0][0][0].length; col2++) {
+                    for (int action1 = 0; action1 < curr_Q[0][0][0][0].length; action1++)
+                        for (int action2 = 0; action2 < curr_Q[0][0][0][0][0].length; action2++) {
+                            total_diff += Math.abs(curr_Q[row1][col1][row2][col2][action1][action2] - prev_Q[row1][col1][row2][col2][action1][action2]);
+                        }
+                    count++;
+                }
+        return total_diff / (double) count;
+    }
+
     /**
      * learn the Q value
      */
@@ -200,10 +216,13 @@ public class GameSolver {
             double[][][][][][] temp_Q1 = updateQ(Q1, 1);
             // update Q2 for player 2
             double[][][][][][] temp_Q2 = updateQ(Q2, 2);
+            double loss1 = calculateAverageQDifference(temp_Q1, Q1);
+            double loss2 = calculateAverageQDifference(temp_Q2, Q2);
+
             Q1 = temp_Q1;
             Q2 = temp_Q2;
 
-            System.out.println("Iteration " + i + " is complete");
+            System.out.println("Iteration " + i + " is complete, loss is " + loss1 + " " + loss2);
         }
 
         // System.out.println("Q1");
