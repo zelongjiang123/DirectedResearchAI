@@ -22,7 +22,7 @@ public class LineChart extends JFrame {
 
         // Create chart
         JFreeChart chart = ChartFactory.createLineChart(
-                "Number Line Plot",    // Chart title
+                title,    // Chart title
                 "Index",               // X-Axis Label
                 "Value",               // Y-Axis Label
                 dataset,               // Dataset
