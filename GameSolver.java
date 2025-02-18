@@ -1,7 +1,10 @@
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 public class GameSolver {
 
@@ -211,6 +214,7 @@ public class GameSolver {
      */
     public void learning() {
         final int ITERATIONS = 100;
+        List<Double> losses1 = new LinkedList<>(), losses2 = new LinkedList<>();
         for (int i = 0; i < ITERATIONS; i++) {
             // update Q1 for player 1
             double[][][][][][] temp_Q1 = updateQ(Q1, 1);
@@ -222,8 +226,25 @@ public class GameSolver {
             Q1 = temp_Q1;
             Q2 = temp_Q2;
 
+            losses1.add(loss1);
+            losses2.add(loss2);
+
             System.out.println("Iteration " + i + " is complete, loss is " + loss1 + " " + loss2);
         }
+
+        SwingUtilities.invokeLater(() -> {
+            LineChart example = new LineChart("Difference for Q1", losses1, new int[] {-1, 5});
+            example.setSize(600, 400);
+            example.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            example.setVisible(true);
+        });
+
+        SwingUtilities.invokeLater(() -> {
+            LineChart example = new LineChart("Difference for Q2", losses2, new int[] {-1, 5 });
+            example.setSize(600, 400);
+            example.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            example.setVisible(true);
+        });
 
         // System.out.println("Q1");
         // printQ(Q1);
