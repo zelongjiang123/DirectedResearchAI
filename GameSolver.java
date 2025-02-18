@@ -230,17 +230,17 @@ public class GameSolver {
         }
 
         SwingUtilities.invokeLater(() -> {
-            LineChart example = new LineChart("Difference for Q1", losses1, new int[] {-1, 5});
-            example.setSize(600, 400);
-            example.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            example.setVisible(true);
+            LineChart chart = new LineChart("Difference for Q1", losses1, new int[] {-1, 5});
+            chart.setSize(600, 400);
+            chart.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            chart.setVisible(true);
         });
 
         SwingUtilities.invokeLater(() -> {
-            LineChart example = new LineChart("Difference for Q2", losses2, new int[] {-1, 5 });
-            example.setSize(600, 400);
-            example.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            example.setVisible(true);
+            LineChart chart = new LineChart("Difference for Q2", losses2, new int[] {-1, 5 });
+            chart.setSize(600, 400);
+            chart.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            chart.setVisible(true);
         });
 
         // System.out.println("Q1");
@@ -332,7 +332,7 @@ public class GameSolver {
         GameVisualization panel = new GameVisualization(positions, gameSolver.REWARD);
         frame.add(panel);
         frame.setSize(GameVisualization.GRID_SIZE * GameVisualization.CELL_SIZE + 15, GameVisualization.GRID_SIZE * GameVisualization.CELL_SIZE + 40);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setVisible(true);
     }
 }
