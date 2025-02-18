@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class MathUtils {
      /**
      * transpose a given matrix
@@ -50,4 +52,25 @@ public class MathUtils {
         }
         return C;
     }
+
+     // Convert trinary (base-3) to decimal (base-10)
+    public static int trinaryToDecimal(int[] trinary) {
+        int decimal = 0;
+        for (int i = 0; i < trinary.length; i++) {
+            decimal = decimal * 3 + trinary[i]; // Multiply by 3 and add digit
+        }
+        return decimal;
+    }
+
+    // Convert decimal (base-10) to trinary (base-3) and return as int[]
+    public static int[] decimalToTrinary(int decimal, int num_digits) {
+        int[] trinary = new int[num_digits];
+        int index = num_digits-1;
+        while (decimal > 0) {
+            trinary[index--] = decimal % 3; // Get remainder (trinary digit)
+            decimal /= 3; // Divide by 3
+        }
+        return trinary;
+    }
+
 }

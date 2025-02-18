@@ -9,9 +9,9 @@ import javax.swing.SwingUtilities;
 public class GameSolver {
 
     // 0: up, 1: down, 2: left, 3: right
-    // both Qs have the same format: [player 1 row][player 1 col][player 2 row][player 2 col][player 1 action][player 2 action]
-    double[][][][][][] Q1; // matrix for player 1
-    double[][][][][][] Q2; // matrix for player 2
+    // both Qs have the same format: [the state (both players position in trinary form and then convert it to integer)][player 1 action][player 2 action]
+    double[][][] Q1; // matrix for player 1
+    double[][][] Q2; // matrix for player 2
 
     // reward matrix is
     /*
@@ -33,10 +33,13 @@ public class GameSolver {
     final int CRASH = 10;
     final double DISCOUNT = 0.9;
     final double SMALL_NUM = -10000.0;
+    
+    final int STATES = 81;
+    final int ACTIONS = 4;
 
     public GameSolver() {
-        Q1 = new double[3][3][3][3][4][4];
-        Q2 = new double[3][3][3][3][4][4];
+        Q1 = new double[STATES][ACTIONS][ACTIONS];
+        Q2 = new double[STATES][ACTIONS][ACTIONS];
     }
 
     /**
@@ -76,14 +79,14 @@ public class GameSolver {
      * @return  two payoff matrices with same format: row player is player 1 and column player is player 2
      */
     public double[][][] constructPayoffMatrix(int[] positions) {
-        int num_actions_1 = Q1[0][0][0][0].length, num_actions_2 = Q1[0][0][0][0][0].length;
+        int num_actions_1 = Q1[0].length, num_actions_2 = Q1[0][0].length;
         double[][] payoff_1 = new double[num_actions_1][num_actions_2];
         double[][] payoff_2 = new double[num_actions_1][num_actions_2];
-
+        int state = MathUtils.trinaryToDecimal(positions);
         for (int i = 0; i < num_actions_1; i++)
             for (int j = 0; j < num_actions_2; j++) {
-                payoff_1[i][j] = Q1[positions[0]][positions[1]][positions[2]][positions[3]][i][j];
-                payoff_2[i][j] = Q2[positions[0]][positions[1]][positions[2]][positions[3]][i][j];
+                payoff_1[i][j] = Q1[state][i][j];
+                payoff_2[i][j] = Q2[state][i][j];
             }
 
         return new double[][][] { payoff_1, payoff_2 };
@@ -94,17 +97,13 @@ public class GameSolver {
      * @param Q
      * @return
      */
-    public double[][][][][][] generateTempCopy(double[][][][][][] Q) {
-        double[][][][][][] temp_Q = new double[Q.length][Q[0].length][Q[0][0].length][Q[0][0][0].length][Q[0][0][0][0].length][Q[0][0][0][0][0].length];
-        for (int row1 = 0; row1 < Q.length; row1++)
-            for (int col1 = 0; col1 < Q[0].length; col1++)
-                for (int row2 = 0; row2 < Q[0][0].length; row2++)
-                    for (int col2 = 0; col2 < Q[0][0][0].length; col2++)
-
-                        for (int action1 = 0; action1 < Q[0][0][0][0].length; action1++)
-                            for (int action2 = 0; action2 < Q[0][0][0][0][0].length; action2++) {
-                                temp_Q[row1][col1][row2][col2][action1][action2] = Q[row1][col1][row2][col2][action1][action2];
-                            }
+    public double[][][] generateTempCopy(double[][][] Q) {
+        double[][][] temp_Q = new double[Q.length][Q[0].length][Q[0][0].length];
+        for (int state = 0; state < Q.length; state++)
+            for (int action1 = 0; action1 < Q[0].length; action1++)
+                for (int action2 = 0; action2 < Q[0][0].length; action2++) {
+                    temp_Q[state][action1][action2] = Q[state][action1][action2];
+                }
 
         return temp_Q;
     }
@@ -113,19 +112,34 @@ public class GameSolver {
      * print the values in Q
      * @param Q
      */
-    public void printQ(double[][][][][][] Q) {
-        for (int row1 = 0; row1 < Q.length; row1++)
-            for (int col1 = 0; col1 < Q[0].length; col1++)
-                for (int row2 = 0; row2 < Q[0][0].length; row2++)
-                    for (int col2 = 0; col2 < Q[0][0][0].length; col2++) {
-                        System.out.println("row1 " + row1 + " col2 " + col1 + " row2 " + row2 + " col2 " + col2);
-                        for (int action1 = 0; action1 < Q[0][0][0][0].length; action1++)
-                            for (int action2 = 0; action2 < Q[0][0][0][0][0].length; action2++) {
-                                System.out.print(Q[row1][col1][row2][col2][action1][action2] + " ");
-                            }
-                        System.out.println();
-                    }
+    public void printQ(double[][][] Q) {
+        for (int state = 0; state < Q.length; state++) {
+            int[] positions = MathUtils.decimalToTrinary(state, 4);
+            System.out.println("row1 " + positions[0] + " col1 " + positions[1] + " row2 " + positions[2] + " col2 "
+                    + positions[3]);
+            for (int action1 = 0; action1 < Q[0].length; action1++)
+                for (int action2 = 0; action2 < Q[0][0].length; action2++) {
+                    System.out.print(Q[state][action1][action2] + " ");
+                }
+            System.out.println();
+        }
 
+    }
+
+    /**
+     * check whether the positions are valid (cannot be out of bound)
+     * @param positions
+     * @return
+     */
+    public boolean validPositions(int[] positions){
+        int temp = (int) Math.sqrt(STATES);
+        int boundary = (int) Math.sqrt(temp);
+        for (int pos = 0; pos < positions.length; pos++) {
+            if (positions[pos] < 0 || positions[pos] >= boundary) {
+                return false;
+            }
+        }
+        return true;
     }
 
 
@@ -135,77 +149,60 @@ public class GameSolver {
      * @param player
      * @return
      */
-    public double[][][][][][] updateQ(double[][][][][][] Q, int player) {
-        double[][][][][][] temp_Q = generateTempCopy(Q);
-        for (int row1 = 0; row1 < Q.length; row1++)
-            for (int col1 = 0; col1 < Q[0].length; col1++)
-                for (int row2 = 0; row2 < Q[0][0].length; row2++)
-                    for (int col2 = 0; col2 < Q[0][0][0].length; col2++) {
-
-                        for (int action1 = 0; action1 < Q[0][0][0][0].length; action1++)
-                            for (int action2 = 0; action2 < Q[0][0][0][0][0].length; action2++) {
-                                int reward = REWARD[row1][col1] - REWARD[row2][col2];
-                                if(player == 2){
-                                    reward = REWARD[row2][col2] - REWARD[row1][col1];
-                                }
-                                if (row1 == row2 && col1 == col2) {
-                                    if (player == 1)
-                                        reward += CRASH;
-                                    else
-                                        reward -= CRASH;
-                                }
-
-                                int[] nextPositions = calculateNextPositions(new int[] { row1, col1, row2, col2 },
-                                        new int[] { action1, action2 });
-
-                                // check whether the next positions are out of bound
-                                boolean outOfBound = false;
-                                for (int pos = 0; pos < nextPositions.length; pos += 2) {
-                                    if (nextPositions[pos] < 0 || nextPositions[pos] >= Q.length) {
-                                        outOfBound = true;
-                                        break;
-                                    }
-                                }
-                                for (int pos = 1; pos < nextPositions.length; pos += 2) {
-                                    if (nextPositions[pos] < 0 || nextPositions[pos] >= Q[0].length) {
-                                        outOfBound = true;
-                                        break;
-                                    }
-                                }
-
-                                if (outOfBound) { // the next positions are out of bound (not a valid state)
-                                    temp_Q[row1][col1][row2][col2][action1][action2] = SMALL_NUM;
-                                } else {
-                                    double[][][] payoff_matrix = constructPayoffMatrix(nextPositions);
-                                    double[][] payoff_matrix_1 = payoff_matrix[0],
-                                            payoff_matrix_2 = payoff_matrix[1];
-
-                                    NashGameSolver nashGameSolver = new NashGameSolver(SMALL_NUM);
-                                    GameOutcome outcome = nashGameSolver.calculateNash(payoff_matrix_1, MathUtils.transpose(payoff_matrix_2), false);
-                                    double payoff = (player == 1) ? outcome.payoff_1 : outcome.payoff_2;
-                                    temp_Q[row1][col1][row2][col2][action1][action2] = reward
-                                            + DISCOUNT * payoff;
-                                }
-
-                            }
-
+    public double[][][] updateQ(double[][][] Q, int player) {
+        double[][][] temp_Q = generateTempCopy(Q);
+        for (int state = 0; state < Q.length; state++) {
+            int[] positions = MathUtils.decimalToTrinary(state, 4);
+            int row1 = positions[0], col1 = positions[1], row2 = positions[2], col2 = positions[3];
+            for (int action1 = 0; action1 < Q[0].length; action1++)
+                for (int action2 = 0; action2 < Q[0][0].length; action2++) {
+                    int reward = REWARD[row1][col1] - REWARD[row2][col2];
+                    if (player == 2) {
+                        reward = REWARD[row2][col2] - REWARD[row1][col1];
                     }
+                    if (row1 == row2 && col1 == col2) {
+                        if (player == 1)
+                            reward += CRASH;
+                        else
+                            reward -= CRASH;
+                    }
+
+                    int[] nextPositions = calculateNextPositions(new int[] { row1, col1, row2, col2 },
+                            new int[] { action1, action2 });
+
+                    
+                    
+
+                    if (!validPositions(nextPositions)) { // the next positions are out of bound (not a valid state)
+                        temp_Q[state][action1][action2] = SMALL_NUM;
+                    } else {
+                        double[][][] payoff_matrix = constructPayoffMatrix(nextPositions);
+                        double[][] payoff_matrix_1 = payoff_matrix[0],
+                                payoff_matrix_2 = payoff_matrix[1];
+
+                        NashGameSolver nashGameSolver = new NashGameSolver(SMALL_NUM);
+                        GameOutcome outcome = nashGameSolver.calculateNash(payoff_matrix_1,
+                                MathUtils.transpose(payoff_matrix_2), false);
+                        double payoff = (player == 1) ? outcome.payoff_1 : outcome.payoff_2;
+                        temp_Q[state][action1][action2] = reward
+                                + DISCOUNT * payoff;
+                    }
+
+                }
+
+        }
         return temp_Q;
     }
 
-    public double calculateAverageQDifference(double[][][][][][] curr_Q, double[][][][][][] prev_Q){
-        int count = 0;
+    public double calculateAverageQDifference(double[][][] curr_Q, double[][][] prev_Q){
+        int count = STATES * ACTIONS * ACTIONS;
         double total_diff = 0.0;
-        for (int row1 = 0; row1 < curr_Q.length; row1++)
-        for (int col1 = 0; col1 < curr_Q[0].length; col1++)
-            for (int row2 = 0; row2 < curr_Q[0][0].length; row2++)
-                for (int col2 = 0; col2 < curr_Q[0][0][0].length; col2++) {
-                    for (int action1 = 0; action1 < curr_Q[0][0][0][0].length; action1++)
-                        for (int action2 = 0; action2 < curr_Q[0][0][0][0][0].length; action2++) {
-                            total_diff += Math.abs(curr_Q[row1][col1][row2][col2][action1][action2] - prev_Q[row1][col1][row2][col2][action1][action2]);
-                        }
-                    count++;
+        for (int state = 0; state < curr_Q.length; state++) {
+            for (int action1 = 0; action1 < curr_Q[0].length; action1++)
+                for (int action2 = 0; action2 < curr_Q[0][0].length; action2++) {
+                    total_diff += Math.abs(curr_Q[state][action1][action2] - prev_Q[state][action1][action2]);
                 }
+        }
         return total_diff / (double) count;
     }
 
@@ -217,9 +214,9 @@ public class GameSolver {
         List<Double> losses1 = new LinkedList<>(), losses2 = new LinkedList<>();
         for (int i = 0; i < ITERATIONS; i++) {
             // update Q1 for player 1
-            double[][][][][][] temp_Q1 = updateQ(Q1, 1);
+            double[][][] temp_Q1 = updateQ(Q1, 1);
             // update Q2 for player 2
-            double[][][][][][] temp_Q2 = updateQ(Q2, 2);
+            double[][][] temp_Q2 = updateQ(Q2, 2);
             double loss1 = calculateAverageQDifference(temp_Q1, Q1);
             double loss2 = calculateAverageQDifference(temp_Q2, Q2);
 
