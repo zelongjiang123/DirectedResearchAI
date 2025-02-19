@@ -151,8 +151,8 @@ public class NashGameSolver {
         // printRatio(ratio_1);
         // printRatio(ratio_2);
 
-        calculateAdjustedRatio(ratio_2, matrix_1);
-        calculateAdjustedRatio(ratio_1, matrix_2);
+        // calculateAdjustedRatio(ratio_2, matrix_1);
+        // calculateAdjustedRatio(ratio_1, matrix_2);
 
         double payoff_1 = 0.0, payoff_2 = 0.0;
         for (int i = 0; i < strategy1.length; i++)
