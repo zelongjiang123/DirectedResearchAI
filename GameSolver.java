@@ -131,7 +131,7 @@ public class GameSolver {
      * @param positions
      * @return
      */
-    public boolean validPositions(int[] positions){
+    public boolean isValidPositions(int[] positions){
         int temp = (int) Math.sqrt(STATES);
         int boundary = (int) Math.sqrt(temp);
         for (int pos = 0; pos < positions.length; pos++) {
@@ -173,7 +173,7 @@ public class GameSolver {
                     
                     
 
-                    if (!validPositions(nextPositions)) { // the next positions are out of bound (not a valid state)
+                    if (!isValidPositions(nextPositions)) { // the next positions are out of bound (not a valid state)
                         temp_Q[state][action1][action2] = SMALL_NUM;
                     } else {
                         double[][][] payoff_matrix = constructPayoffMatrix(nextPositions);
