@@ -28,6 +28,7 @@ public class GameSolver {
      * 1 1 1
      */
     // final int[][] REWARD = new int[][] { { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 } };
+    final int[][] REWARD_SPECIAL = new int[][] { { -4, 5, 1 }, { 0, -1, -2 }, { 4, 1, 2 } };; // for player 2
 
 
     final int CRASH = 10;
@@ -157,8 +158,10 @@ public class GameSolver {
             for (int action1 = 0; action1 < Q[0].length; action1++)
                 for (int action2 = 0; action2 < Q[0][0].length; action2++) {
                     int reward = REWARD[row1][col1] - REWARD[row2][col2];
+                    // int reward = REWARD[row1][col1];
                     if (player == 2) {
                         reward = REWARD[row2][col2] - REWARD[row1][col1];
+                        // reward = REWARD_SPECIAL[row2][col2];
                     }
                     if (row1 == row2 && col1 == col2) {
                         if (player == 1)
@@ -243,6 +246,9 @@ public class GameSolver {
             chart.setVisible(true);
         });
 
+        visualizeQ(Q1, 1);
+        visualizeQ(Q1, 2);
+
         // System.out.println("Q1");
         // printQ(Q1);
 
@@ -295,6 +301,36 @@ public class GameSolver {
         }
     }
 
+    public void visualizeQ(double[][][] Q, int player){
+        double [][][] payoffs = new double[9][3][3];
+        for (int state = 0; state < Q.length; state++) {
+            int[] positions = MathUtils.decimalToTrinary(state, 4);            
+            double[][][] payoff_matrix = constructPayoffMatrix(positions);
+            double[][] payoff_matrix_1 = payoff_matrix[0],
+                    payoff_matrix_2 = payoff_matrix[1];
+
+            NashGameSolver nashGameSolver = new NashGameSolver(SMALL_NUM);
+            GameOutcome outcome = nashGameSolver.calculateNash(payoff_matrix_1, 
+                MathUtils.transpose(payoff_matrix_2), false);
+            
+            if(player == 1)
+                payoffs[positions[2] * 3 + positions[3]][positions[0]][positions[1]] = outcome.payoff_1;
+            else if(player == 2)
+                payoffs[positions[0] * 3 + positions[1]][positions[2]][positions[3]] = outcome.payoff_2;
+                
+        }
+        
+        for(int i=0; i<9; i++){
+            double[][] matrix = payoffs[i];
+            int row = i / 3, col = i % 3;
+            JFrame frame = new JFrame("Matrix Visualizer");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(300, 350); // Increased height for title
+            frame.add(new MatrixVisualizer(matrix, "player " + player + " is at " + row + " " + col));
+            frame.setVisible(true);
+        }
+    }
+
     /**
      * find the players' actions based on their start position
      * it should be called after learning process is complete
@@ -322,17 +358,34 @@ public class GameSolver {
         return positions;
     }
 
+    public void visualizeAction(){
+        int[][] positions = findActions(new int[] {0, 0, 2, 2});
+
+        List<int[]> path1 = new LinkedList<>();
+        List<int[]> path2 = new LinkedList<>();
+        for(int i=0; i<positions.length; i++){
+            path1.add(new int[] {positions[i][0], positions[i][1]});
+            path2.add(new int[] {positions[i][2], positions[i][3]});
+        }
+        
+        // JFrame frame = new JFrame("3x3 Grid with Moving Cars");
+        // GameVisualization panel = new GameVisualization(positions, REWARD);
+        // frame.add(panel);
+        // frame.setSize(GameVisualization.GRID_SIZE * GameVisualization.CELL_SIZE + 15, GameVisualization.GRID_SIZE * GameVisualization.CELL_SIZE + 40);
+        // frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        // frame.setVisible(true);
+
+        JFrame frame = new JFrame("Matrix Movement Visualization (Two Paths)");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(300, 300);
+        frame.add(new MovementVisualizer(path1, path2));
+        frame.setVisible(true);
+    }
+
     public static void main(String[] args) {
         GameSolver gameSolver = new GameSolver();
         // gameSolver.testCalculateNash();
         gameSolver.learning();
-        int[][] positions = gameSolver.findActions(new int[] {0, 0, 2, 2});
-        
-        JFrame frame = new JFrame("3x3 Grid with Moving Cars");
-        GameVisualization panel = new GameVisualization(positions, gameSolver.REWARD);
-        frame.add(panel);
-        frame.setSize(GameVisualization.GRID_SIZE * GameVisualization.CELL_SIZE + 15, GameVisualization.GRID_SIZE * GameVisualization.CELL_SIZE + 40);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setVisible(true);
+        gameSolver.visualizeAction();
     }
 }
