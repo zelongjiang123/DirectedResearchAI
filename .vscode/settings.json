@@ -1,11 +1,12 @@
 {
     "java.project.sourcePaths": [
-        "."
+        "java/src",
+        ""
     ],
     "java.project.referencedLibraries": [
-        "libs\\jcommon-1.0.23.jar",
-        "libs\\jfreechart-1.0.19.jar",
-        "libs\\jfreechart-1.0.19-experimental.jar",
-        "libs\\jfreechart-1.0.19-swt.jar"
+        "java/libs/jcommon-1.0.23.jar",
+        "java/libs/jfreechart-1.0.19.jar",
+        "java/libs/jfreechart-1.0.19-experimental.jar",
+        "java/libs/jfreechart-1.0.19-swt.jar"
     ]
 }
