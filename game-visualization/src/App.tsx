@@ -1,7 +1,7 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import MatrixGrid from './MatrixGrid';
+import MatrixGrid from './components/MatrixGrid';
 
 function App() {
   return (
