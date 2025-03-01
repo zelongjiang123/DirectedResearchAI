@@ -1,12 +1,13 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import MatrixGrid from './components/MatrixGrid';
+import OptimalStrategyPage from './pages/optimal_strategy_page/OptimalStrategyPage';
+
 
 function App() {
   return (
     <div className="App">
-      <MatrixGrid/>
+      <OptimalStrategyPage/>
     </div>
   );
 }
