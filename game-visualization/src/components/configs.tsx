@@ -3,4 +3,5 @@ export interface Arrow {
     fromCol: number;
     toRow: number;
     toCol: number;
+    probability?: number;
 }

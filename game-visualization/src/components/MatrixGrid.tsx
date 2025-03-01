@@ -6,14 +6,16 @@ type MatrixGridProps = {
   initialRows?: number;
   initialCols?: number;
   arrowsPlayer1: Arrow[];
-  arrowsPlayer2: Arrow[];
+  arrowsPlayer2?: Arrow[];
+  header?: string;
 };
 
 const MatrixGrid: React.FC<MatrixGridProps> = ({
   initialRows = 3,
   initialCols = 3,
   arrowsPlayer1,
-  arrowsPlayer2
+  arrowsPlayer2,
+  header
 }) => {
   const [rows, setRows] = useState<number>(initialRows);
   const [cols, setCols] = useState<number>(initialCols);
@@ -62,7 +64,9 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
       const y1 = arrow.fromRow * cellSize + cellSize / 2;
       const x2 = arrow.toCol * cellSize + cellSize / 2;
       const y2 = arrow.toRow * cellSize + cellSize / 2;
-
+      const strokeWidth = 2;
+      const adjustedStrokeWidth = (arrow.probability === undefined ? 1 : arrow.probability) * strokeWidth;
+      
       // Apply nudge if the position has already been used
       const { x1: nudgeX1, y1: nudgeY1, x2: nudgeX2, y2: nudgeY2 } = applyNudge(x1, y1, x2, y2, 10, usedPositions);
 
@@ -74,7 +78,7 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
             x2={nudgeX2}
             y2={nudgeY2}
             stroke={color}
-            strokeWidth="2"
+            strokeWidth={adjustedStrokeWidth}
             markerEnd={`url(#arrowhead-${color})`}
           />
           <defs>
@@ -97,7 +101,7 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
 
   return (
     <div className="matrix-grid">
-      <h1 className="matrix-grid-heading">n × m Matrix with Arrows</h1>
+      <h1 className="matrix-grid-heading">{header}</h1>
       <div className="matrix-grid-content">
         <div className="matrix-grid-content-grid" style={{ gridTemplateColumns: `repeat(${cols}, ${cellSize}px)` }}>
           {Array.from({ length: rows }).map((_, rowIndex) =>
@@ -120,7 +124,7 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
           {svgRenderArrows(arrowsPlayer1, 'red')}
 
           {/* Render blue arrows */}
-          {svgRenderArrows(arrowsPlayer2, 'blue')}
+          {arrowsPlayer2 !== undefined && svgRenderArrows(arrowsPlayer2, 'blue')}
         </svg>
       </div>
     </div>

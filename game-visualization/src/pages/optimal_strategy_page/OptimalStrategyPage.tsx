@@ -34,7 +34,7 @@ function OptimalStrategyPage() {
   return (
     <div className="optimal-strategyPage">
       
-      <MatrixGrid arrowsPlayer1={arrowsPlayer1} arrowsPlayer2={arrowsPlayer2} />
+      <MatrixGrid arrowsPlayer1={arrowsPlayer1} arrowsPlayer2={arrowsPlayer2} header='Optimal Strategy'/>
     </div>
   );
 }
