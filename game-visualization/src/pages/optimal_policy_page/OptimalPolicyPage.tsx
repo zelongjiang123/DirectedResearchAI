@@ -35,7 +35,7 @@ function OptimalPolicyPage() {
   return (
     <div className="optimal-strategyPage">
       
-      <MatrixGrid arrowsPlayer1={arrowsPlayer1} header='Optimal Policy'/>
+      <MatrixGrid arrowsPlayer1={arrowsPlayer1} header='Optimal Policy' cellClick={true}/>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import './index.less';
 import { Arrow } from "./configs";
 
@@ -8,6 +8,7 @@ type MatrixGridProps = {
   arrowsPlayer1: Arrow[];
   arrowsPlayer2?: Arrow[];
   header?: string;
+  cellClick?: boolean;
 };
 
 const MatrixGrid: React.FC<MatrixGridProps> = ({
@@ -15,20 +16,54 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
   initialCols = 3,
   arrowsPlayer1,
   arrowsPlayer2,
-  header
+  header,
+  cellClick = false,
 }) => {
   const [rows, setRows] = useState<number>(initialRows);
   const [cols, setCols] = useState<number>(initialCols);
-  const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
+  const [arrow1, setArrow1] = useState<Map<String, Arrow[]>>();
+  const [arrow2, setArrow2] = useState<Map<String, Arrow[]>>();
 
-  // const handleCellClick = (row: number, col: number) => {
-  //   if (selectedCell) {
-  //     setArrows([...arrows, { fromRow: selectedCell.row, fromCol: selectedCell.col, toRow: row, toCol: col }]);
-  //     setSelectedCell(null);
-  //   } else {
-  //     setSelectedCell({ row, col });
-  //   }
-  // };
+  useEffect(() => {
+    let arrowMap: Map<String, Arrow[]> = new Map();
+    for(const arrow of arrowsPlayer1){
+      const arrowStr = `${arrow.fromRow},${arrow.fromCol}`;
+      let arrowArray = arrowMap.get(arrowStr);
+      if(arrowArray === undefined)
+        arrowArray = [];
+      arrowArray.push(arrow);
+      arrowMap.set(arrowStr, arrowArray);
+    }
+    setArrow1(arrowMap);
+  }, [arrowsPlayer1]); 
+
+  useEffect(() => {
+    let arrowMap: Map<String, Arrow[]> = new Map();
+    if(arrowsPlayer2 !== undefined){
+      for(const arrow of arrowsPlayer2){
+        const arrowStr = `${arrow.fromRow},${arrow.fromCol}`;
+        let arrowArray = arrowMap.get(arrowStr);
+        if(arrowArray === undefined)
+          arrowArray = [];
+        arrowArray.push(arrow);
+        arrowMap.set(arrowStr, arrowArray);
+      }
+    }
+    setArrow1(arrowMap);
+  }, [arrowsPlayer2]); 
+
+
+  const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | undefined>(undefined);
+
+  const handleCellClick = (row: number, col: number) => {
+    if(cellClick){
+      if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
+        setSelectedCell(undefined);
+      } else {
+        setSelectedCell({ row, col });
+      }
+    }
+  };
 
   const cellSize = 50;
   const svgWidth = cols * cellSize;
@@ -57,9 +92,19 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
     return {x1, y1, x2, y2 };
   };
 
-  const svgRenderArrows = (arrows: Arrow[], color: string) => {
+  const svgRenderArrows = (arrows: Arrow[], color: string, player: number) => {
+    let arrowArray: Arrow[] | undefined = arrows;
+    if(selectedCell !== undefined){
+      const selectedCellStr = `${selectedCell.row},${selectedCell.col}`;
+      if(player === 1)
+        arrowArray = arrow1?.get(selectedCellStr);
+      else 
+        arrowArray = arrow2?.get(selectedCellStr);
+
+      if(arrowArray === undefined) arrowArray = arrows;
+    }
     const usedPositions = new Map<string, number>(); // Set to track used positions
-    return arrows.map((arrow, index) => {
+    return arrowArray.map((arrow, index) => {
       const x1 = arrow.fromCol * cellSize + cellSize / 2;
       const y1 = arrow.fromRow * cellSize + cellSize / 2;
       const x2 = arrow.toCol * cellSize + cellSize / 2;
@@ -109,7 +154,7 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
               <div
                 className="matrix-grid-content-grid-cell"
                 key={`${rowIndex}-${colIndex}`}
-                // onClick={() => handleCellClick(rowIndex, colIndex)}
+                onClick={() => handleCellClick(rowIndex, colIndex)}
                 style={{
                   width: `${cellSize}px`,
                   height: `${cellSize}px`,
@@ -121,10 +166,10 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
         </div>
         <svg className="matrix-grid-content-svg" width={svgWidth} height={svgHeight}>
           {/* Render red arrows */}
-          {svgRenderArrows(arrowsPlayer1, 'red')}
+          {svgRenderArrows(arrowsPlayer1, 'red', 1)}
 
           {/* Render blue arrows */}
-          {arrowsPlayer2 !== undefined && svgRenderArrows(arrowsPlayer2, 'blue')}
+          {arrowsPlayer2 !== undefined && svgRenderArrows(arrowsPlayer2, 'blue', 2)}
         </svg>
       </div>
     </div>
