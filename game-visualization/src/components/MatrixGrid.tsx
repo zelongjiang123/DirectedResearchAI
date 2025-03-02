@@ -49,7 +49,7 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
         arrowMap.set(arrowStr, arrowArray);
       }
     }
-    setArrow1(arrowMap);
+    setArrow2(arrowMap);
   }, [arrowsPlayer2]); 
 
 
