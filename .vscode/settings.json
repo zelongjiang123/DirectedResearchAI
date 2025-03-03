@@ -8,5 +8,8 @@
         "java/libs/jfreechart-1.0.19.jar",
         "java/libs/jfreechart-1.0.19-experimental.jar",
         "java/libs/jfreechart-1.0.19-swt.jar"
-    ]
+    ],
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.dependency.syncWithFolderExplorer": false
 }
