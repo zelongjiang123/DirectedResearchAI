@@ -42,7 +42,6 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
       arrowArray.push(arrow);
       arrowMap.set(arrowStr, arrowArray);
     }
-    console.log(arrowMap)
     setArrow1(arrowMap);
   }, [arrowsPlayer1]); 
 
