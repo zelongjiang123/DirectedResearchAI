@@ -14,9 +14,9 @@ public class GameVisualization extends JPanel implements ActionListener {
 
     private int car1Row = 0, car1Col = 0; // Car 1 position
     private int car2Row = 2, car2Col = 2; // Car 2 position
-    private int[] carsSpeed = new int[4]; // the speed for both cars in a form (player 1 speed row, player 1 speed col, player 2 speed row, player 2 speed col)
+    private int[][] carsSpeed = new int[2][2]; // the speed for both cars in a form [[player 1 speed row, player 1 speed col], [player 2 speed row, player 2 speed col]]
 
-    private int[][] positions;
+    private int[][][] positions;
 
     private int period = 0;
 
@@ -40,7 +40,7 @@ public class GameVisualization extends JPanel implements ActionListener {
         ratio = 255.0 / maxBrightness; // Compute ratio for scaling
     }
 
-    public GameVisualization(int[][] positions, int[][] brightness) {
+    public GameVisualization(int[][][] positions, int[][] brightness) {
         this.brightness = brightness;
         this.positions = positions;
         maxBrightness = findMaxBrightness();
@@ -120,16 +120,16 @@ public class GameVisualization extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(period < positions.length){
-            int nextCar1Row = calculateLocations(positions[period][0]);
-            int nextCar1Col = calculateLocations(positions[period][1]);
-            int nextCar2Row = calculateLocations(positions[period][2]);
-            int nextCar2Col = calculateLocations(positions[period][3]);
+        if(positions.length > 0 && period < positions[0].length){
+            int nextCar1Row = calculateLocations(positions[0][period][0]);
+            int nextCar1Col = calculateLocations(positions[0][period][1]);
+            int nextCar2Row = calculateLocations(positions[1][period][0]);
+            int nextCar2Col = calculateLocations(positions[1][period][1]);
 
-            if (period == 0 || carsSpeed[0] > 0 && carsSpeed[0] + this.car1Row >= nextCar1Row ||
-                    carsSpeed[0] < 0 && carsSpeed[0] + this.car1Row <= nextCar1Row
-                    || carsSpeed[1] > 0 && carsSpeed[1] + this.car1Col >= nextCar1Col ||
-                    carsSpeed[1] < 0 && carsSpeed[1] + this.car1Col <= nextCar1Col) { // recalculate speed
+            if (period == 0 || carsSpeed[0][0] > 0 && carsSpeed[0][0] + this.car1Row >= nextCar1Row ||
+                    carsSpeed[0][0] < 0 && carsSpeed[0][0] + this.car1Row <= nextCar1Row
+                    || carsSpeed[0][1] > 0 && carsSpeed[0][1] + this.car1Col >= nextCar1Col ||
+                    carsSpeed[0][1] < 0 && carsSpeed[0][1] + this.car1Col <= nextCar1Col) { // recalculate speed
 
                 this.car1Row = nextCar1Row;
                 this.car1Col = nextCar1Col;
@@ -137,22 +137,23 @@ public class GameVisualization extends JPanel implements ActionListener {
                 this.car2Col = nextCar2Col;
                 period++;
 
-                if (period < positions.length) {
-                    for (int i = 0; i < carsSpeed.length; i++) {
-                        if (positions[period][i] > positions[period - 1][i])
-                            carsSpeed[i] = velocity;
-                        else if (positions[period][i] < positions[period - 1][i])
-                            carsSpeed[i] = -velocity;
-                        else
-                            carsSpeed[i] = 0;
+                if (period < positions[0].length) {
+                    for (int i = 0; i < carsSpeed.length; i++) 
+                        for (int j = 0; j < carsSpeed[0].length; j++){
+                            if (positions[i][period][j] > positions[i][period - 1][j])
+                                carsSpeed[i][j] = velocity;
+                            else if (positions[i][period][j] < positions[i][period - 1][j])
+                                carsSpeed[i][j] = -velocity;
+                            else
+                                carsSpeed[i][j] = 0;
                     }
                 }
 
             } else {
-                this.car1Row += carsSpeed[0];
-                this.car1Col += carsSpeed[1];
-                this.car2Row += carsSpeed[2];
-                this.car2Col += carsSpeed[3];
+                this.car1Row += carsSpeed[0][0];
+                this.car1Col += carsSpeed[0][1];
+                this.car2Row += carsSpeed[1][0];
+                this.car2Col += carsSpeed[1][1];
             }
             
         }
@@ -162,7 +163,7 @@ public class GameVisualization extends JPanel implements ActionListener {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("3x3 Grid with Moving Cars");
-        GameVisualization panel = new GameVisualization(new int[][] {{0, 0, 2, 2}, {1, 0, 2, 1}, {0, 0, 1, 1}, {0, 1, 0, 1}, {0, 2, 1, 1}}, new int[][] {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}});
+        GameVisualization panel = new GameVisualization(new int[][][] { {{0, 0}, {0, 1}, {1, 1}, {2, 1}, {1, 1}, {1, 2}, {0, 2}, {1, 2}, {1, 1}, {2, 1}, {2, 2}}, {{2, 2}, {1, 2}, {2, 2}, {1, 2}, {0, 2}, {0, 1}, {0, 0}, {1, 0}, {2, 0}, {2, 1}, {2, 2}}}, new int[][] {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}});
         frame.add(panel);
         frame.setSize(GRID_SIZE * CELL_SIZE + 15, GRID_SIZE * CELL_SIZE + 40);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

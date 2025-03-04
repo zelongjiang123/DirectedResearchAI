@@ -306,8 +306,7 @@ public class GameSolver {
         }
     }
 
-    public void visualizeQ(double[][][] Q, int player){
-        double [][][] payoffs = new double[9][3][3];
+    public void calculateStrategies(double[][][] Q){
         for (int state = 0; state < Q.length; state++) {
             int[] positions = MathUtils.decimalToTrinary(state, 4);            
             double[][][] payoff_matrix = constructPayoffMatrix(positions);
@@ -317,12 +316,6 @@ public class GameSolver {
             NashGameSolver nashGameSolver = new NashGameSolver(SMALL_NUM);
             GameOutcome outcome = nashGameSolver.calculateNash(payoff_matrix_1, 
                 MathUtils.transpose(payoff_matrix_2), false);
-            
-            if(player == 1)
-                payoffs[positions[2] * 3 + positions[3]][positions[0]][positions[1]] = outcome.payoff_1;
-            else if(player == 2)
-                payoffs[positions[0] * 3 + positions[1]][positions[2]][positions[3]] = outcome.payoff_2;
-                
         }
     }
 
@@ -332,12 +325,15 @@ public class GameSolver {
      * @param startPosition
      * @return array of positions
      */
-    public int[][] findActions(int[] startPosition){
-        printPositions(startPosition);
+    public int[][][] findActions(int[] startPosition){
+        // printPositions(startPosition);
         final int ITERATIONS = 10;
-        int[][] positions = new int[ITERATIONS+1][startPosition.length];
-        positions[0] = Arrays.copyOf(startPosition, startPosition.length);
-        for (int i = 0; i < ITERATIONS; i++) {
+        int[][][] positions = new int[2][ITERATIONS+1][2];
+        for (int j = 0; j < 2; j++)
+            for (int k = 0; k < 2; k++) {
+                positions[j][0][k] = startPosition[2 * j + k];
+            }
+        for (int i = 1; i <= ITERATIONS; i++) {
             double[][][] payoff_matrix = constructPayoffMatrix(startPosition);
             double[][] payoff_matrix_1 = payoff_matrix[0], payoff_matrix_2 = payoff_matrix[1];
            // printPayoffMatrices(payoff_matrix_1, payoff_matrix_2);
@@ -348,20 +344,16 @@ public class GameSolver {
 
             startPosition = calculateNextPositions(startPosition, new int[] {strategy1, strategy2});
             printPositions(startPosition);
-            positions[i+1] = Arrays.copyOf(startPosition, startPosition.length);
+            for(int j=0; j<2; j++)
+                for(int k=0; k<2; k++){
+                    positions[j][i][k] = startPosition[2 * j + k];
+                }
         }
         return positions;
     }
 
     public void visualizeAction(){
-        int[][] positions = findActions(new int[] {0, 0, 2, 2});
-
-        List<int[]> path1 = new LinkedList<>();
-        List<int[]> path2 = new LinkedList<>();
-        for(int i=0; i<positions.length; i++){
-            path1.add(new int[] {positions[i][0], positions[i][1]});
-            path2.add(new int[] {positions[i][2], positions[i][3]});
-        }
+        int[][][] positions = findActions(new int[] {0, 0, 2, 2});
         
         JFrame frame = new JFrame("3x3 Grid with Moving Cars");
         GameVisualization panel = new GameVisualization(positions, REWARD);
