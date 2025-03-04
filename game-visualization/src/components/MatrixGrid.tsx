@@ -34,6 +34,7 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
       arrowArray.push(arrow);
       arrowMap.set(arrowStr, arrowArray);
     }
+    console.log(arrowMap)
     setArrow1(arrowMap);
   }, [arrowsPlayer1]); 
 
@@ -65,7 +66,7 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
     }
   };
 
-  const cellSize = 50;
+  const cellSize = 100;
   const svgWidth = cols * cellSize;
   const svgHeight = rows * cellSize;
 
@@ -110,33 +111,43 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
       const x2 = arrow.toCol * cellSize + cellSize / 2;
       const y2 = arrow.toRow * cellSize + cellSize / 2;
       const strokeWidth = 2;
-      const adjustedStrokeWidth = (arrow.probability === undefined ? 1 : arrow.probability) * strokeWidth;
+      const probability = arrow.probability === undefined ? 1 : arrow.probability;
+      if(probability === 0) return;
+      const adjustedStrokeWidth =  probability * strokeWidth;
       
       // Apply nudge if the position has already been used
-      const { x1: nudgeX1, y1: nudgeY1, x2: nudgeX2, y2: nudgeY2 } = applyNudge(x1, y1, x2, y2, 10, usedPositions);
+      // const { x1: nudgeX1, y1: nudgeY1, x2: nudgeX2, y2: nudgeY2 } = applyNudge(x1, y1, x2, y2, 10, usedPositions);
+
+      const adjustLength = (num1: number, num2: number, probability: number, maxLength: number): number => {
+        let difference = Math.min(Math.abs(num1 - num2), maxLength * probability);
+        return num1 + difference * (num2 > num1 ? 1 : -1); 
+      }
+
+      const adjustedX2 = adjustLength(x1, x2, probability, cellSize / 2 - 5);
+      const adjustedY2 = adjustLength(y1, y2, probability, cellSize / 2 - 5);
 
       return (
         <g key={`${color}-${index}`}>
           <line
-            x1={nudgeX1}
-            y1={nudgeY1}
-            x2={nudgeX2}
-            y2={nudgeY2}
+            x1={x1}
+            y1={y1}
+            x2={adjustedX2}
+            y2={adjustedY2}
             stroke={color}
-            strokeWidth={adjustedStrokeWidth}
+            strokeWidth={strokeWidth}
             markerEnd={`url(#arrowhead-${color})`}
           />
           <defs>
             <marker
               id={`arrowhead-${color}`}
-              markerWidth="10"
-              markerHeight="7"
-              refX="7"
-              refY="3.5"
+              markerWidth="4"  
+              markerHeight="3" 
+              refX="3"         
+              refY="1.5"
               orient="auto"
               markerUnits="strokeWidth"
             >
-              <polygon points="0 0, 10 3.5, 0 7" fill={color} />
+              <polygon points="0 0, 4 1.5, 0 3" fill={color} />
             </marker>
           </defs>
         </g>
