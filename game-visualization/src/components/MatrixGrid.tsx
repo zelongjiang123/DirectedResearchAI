@@ -10,6 +10,7 @@ type MatrixGridProps = {
   header?: string;
   cellClick?: boolean;
   highlightedCell?: HighlightCell;
+  isApplyNudge?: boolean; // whether to apply nudge to avoid arrows overlapping 
 };
 
 type HighlightCell = {
@@ -26,6 +27,7 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
   header,
   cellClick = false,
   highlightedCell,
+  isApplyNudge = false,
 }) => {
   const [rows, setRows] = useState<number>(initialRows);
   const [cols, setCols] = useState<number>(initialCols);
@@ -79,9 +81,9 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
 
   // Function to nudge overlapping arrows
   const applyNudge = (x1: number, y1: number, x2: number, y2: number, offset: number, usedPositions: Map<string, number>) => {
-    let xMax = Math.max(x1, x2), yMax = Math.max(y1, y2);
-    let xMin = Math.min(x1, x2), yMin = Math.min(y1, y2);
-    let positionStr = `${xMax},${yMax},${xMin},${yMin}`;
+    // let xMax = Math.max(x1, x2), yMax = Math.max(y1, y2);
+    // let xMin = Math.min(x1, x2), yMin = Math.min(y1, y2);
+    let positionStr = `${x1},${y1},${x2},${y2}`;
 
     let count = usedPositions.get(positionStr);
     if (count !== undefined) {
@@ -109,7 +111,7 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
     }
   }
 
-  const svgRenderArrows = (arrows: Arrow[], color: string, player: number) => {
+  const svgRenderArrows = (arrows: Arrow[], color: string, player: number, usedPositions: Map<string ,number>) => {
     let arrowArray: Arrow[] | undefined = arrows;
     if(selectedCell !== undefined){
       const selectedCellStr = `${selectedCell.row},${selectedCell.col}`;
@@ -120,19 +122,23 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
 
       if(arrowArray === undefined) arrowArray = arrows;
     }
-    const usedPositions = new Map<string, number>(); // Set to track used positions
+    
     return arrowArray.map((arrow, index) => {
-      const x1 = arrow.fromCol * cellSize + cellSize / 2;
-      const y1 = arrow.fromRow * cellSize + cellSize / 2;
-      const x2 = arrow.toCol * cellSize + cellSize / 2;
-      const y2 = arrow.toRow * cellSize + cellSize / 2;
+      let x1 = arrow.fromCol * cellSize + cellSize / 2;
+      let y1 = arrow.fromRow * cellSize + cellSize / 2;
+      let x2 = arrow.toCol * cellSize + cellSize / 2;
+      let y2 = arrow.toRow * cellSize + cellSize / 2;
       const strokeWidth = 2;
       const probability = arrow.probability === undefined ? 1 : arrow.probability;
       if(probability === 0) return;
       const adjustedStrokeWidth =  probability * strokeWidth;
       
       // Apply nudge if the position has already been used
-      // const { x1: nudgeX1, y1: nudgeY1, x2: nudgeX2, y2: nudgeY2 } = applyNudge(x1, y1, x2, y2, 10, usedPositions);
+      if(isApplyNudge){
+        ({ x1, y1, x2, y2} = applyNudge(x1, y1, x2, y2, 10, usedPositions));
+        console.log(usedPositions);
+      }
+        
 
       const adjustLength = (num1: number, num2: number, probability: number, maxLength: number): number => {
         let difference = Math.min(Math.abs(num1 - num2), maxLength * probability);
@@ -171,6 +177,22 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
     });
   };
 
+  
+
+  const drawSvg = () => {
+    const usedPositions = new Map<string, number>(); // Set to track used positions
+
+    return <svg className="matrix-grid-content-svg" width={svgWidth} height={svgHeight}>
+      {/* Render red arrows */}
+      {svgRenderArrows(arrowsPlayer1, player1Color, 1, usedPositions)}
+
+      {/* Render blue arrows */}
+      {arrowsPlayer2 !== undefined && svgRenderArrows(arrowsPlayer2, player2Color, 2, usedPositions)}
+
+      {svgRenderOpponentPosition()}
+    </svg>
+  }
+
   return (
     <div className="matrix-grid">
       <h1 className="matrix-grid-heading">{header}</h1>
@@ -192,15 +214,7 @@ const MatrixGrid: React.FC<MatrixGridProps> = ({
             ))
           )}
         </div>
-        <svg className="matrix-grid-content-svg" width={svgWidth} height={svgHeight}>
-          {/* Render red arrows */}
-          {svgRenderArrows(arrowsPlayer1, player1Color, 1)}
-
-          {/* Render blue arrows */}
-          {arrowsPlayer2 !== undefined && svgRenderArrows(arrowsPlayer2, player2Color, 2)}
-
-          {svgRenderOpponentPosition()}
-        </svg>
+        {drawSvg()}
       </div>
     </div>
   );

@@ -1,0 +1,32 @@
+@primary-color: #3498db;
+@spinner-size: 64px;
+@border-width: 4px;
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.spinner {
+  width: @spinner-size;
+  height: @spinner-size;
+  border: @border-width solid @primary-color;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  margin-left: 10px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #555;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
