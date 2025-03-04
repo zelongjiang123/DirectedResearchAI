@@ -41,7 +41,7 @@ const OptimalStrategyPage: React.FC<OptimalStrategyPageProps> = ({
       <h1>Optimal Strategy</h1>
       <div>
       { arrows.map((arrow, index)=>{
-        return <MatrixGrid arrowsPlayer1={[arrow[0]]} arrowsPlayer2={[arrow[1]]} header={`step ${index}`} isApplyNudge={true} />
+        return <MatrixGrid key={`optimal-strategyPage-matrix-${index}`} arrowsPlayer1={[arrow[0]]} arrowsPlayer2={[arrow[1]]} header={`step ${index}`} isApplyNudge={true} />
       })} 
       </div>
      
