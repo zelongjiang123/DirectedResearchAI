@@ -1,4 +1,4 @@
-import { Arrow } from '../../components/configs';
+import { Arrow, HighlightCell, player1Color, player2Color, PoliciesGivenOpponentPosition } from '../../components/configs';
 import MatrixGrid from '../../components/MatrixGrid';
 
 const arrowsPlayer1: Arrow[] = [
@@ -28,14 +28,41 @@ const arrowsPlayer1: Arrow[] = [
     { fromRow: 2, fromCol: 2, toRow: 1, toCol: 2, probability: 0.7 },
 ];
   
+type OptimalPolicyPageProps = {
+  policies: PoliciesGivenOpponentPosition[][];
+};
 
 
-
-function OptimalPolicyPage() {
+const OptimalPolicyPage: React.FC<OptimalPolicyPageProps> = ({
+  policies,
+}) => {
   return (
     <div className="optimal-strategyPage">
-      
-      <MatrixGrid arrowsPlayer1={arrowsPlayer1} header='Optimal Policy' cellClick={true} highlightedCell={{color: "blue", row: 1, col: 2}}/>
+      <h1>Optimal Policy</h1>
+      <div>
+        {
+        policies.map((policy, index)=>{
+          let color = player1Color, opponentColor = player2Color;
+          if(index === 1){
+            color = player2Color;
+            opponentColor = player1Color;
+          }
+          return <div>
+            <h2>Player {index+1}</h2>
+            <div>
+            {
+              policy.map((entry, index2)=>{
+                let highlightedCell: HighlightCell = {color: opponentColor, row: entry.opponentPos[0], col: entry.opponentPos[1]};
+                return <MatrixGrid key={`optimal-policyPage-matrix-player${index+1}-${index2}`} arrowsPlayer1={entry.strategies} header={`the opponent is at position ${entry.opponentPos}`} colorPlayer1={color} highlightedCell={highlightedCell}/>
+              })
+            }
+            </div>
+            
+            </div>
+        })
+        }
+      </div>
+      {/* <MatrixGrid arrowsPlayer1={arrowsPlayer1} header='Optimal Policy' cellClick={true} highlightedCell={{color: "blue", row: 1, col: 2}}/> */}
     </div>
   );
 }

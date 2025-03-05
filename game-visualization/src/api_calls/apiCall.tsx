@@ -1,12 +1,17 @@
-import { Arrow } from "../components/configs";
+import { Arrow, PoliciesGivenOpponentPosition, Strategy } from "../components/configs";
 
-// Example Usage:
+
 interface GetGameResultResponse {
     arrows: Arrow[][];
+    policies: PoliciesGivenOpponentPosition[][];
 }
 
 interface GetGameResultAPIResponse{
-    optimalStrategies: number[][][]
+    optimalStrategies: number[][][];
+    optimalPolicies: {
+        opponentPositions: number[], 
+        transitions: {nextPositions: number[], positions: number[], probability: number}[]
+    }[];
 }
 
 export async function getGameResult(): Promise<GetGameResultResponse> {
@@ -36,8 +41,30 @@ export async function getGameResult(): Promise<GetGameResultResponse> {
                 ]);
             }
         }
+
+
+        let policyListPlayer1: PoliciesGivenOpponentPosition[] = []; 
+        let policyListPlayer2: PoliciesGivenOpponentPosition[] = [];
+
+        if(parsedResponse.optimalPolicies !== undefined){
+            let policies = parsedResponse.optimalPolicies;
+            for(let i=0; i<policies.length/2; i++){
+                let strategies: Arrow[] = [];
+                for(const strategy of policies[i].transitions){
+                    strategies.push({fromRow: strategy.positions[0], fromCol: strategy.positions[1], toRow: strategy.nextPositions[0], toCol: strategy.nextPositions[1], probability: strategy.probability});
+                }
+                policyListPlayer1.push({opponentPos: policies[i].opponentPositions, strategies: strategies});
+            }
+            for(let i=policies.length/2; i<policies.length; i++){
+                let strategies: Arrow[] = [];
+                for(const strategy of policies[i].transitions){
+                    strategies.push({fromRow: strategy.positions[0], fromCol: strategy.positions[1], toRow: strategy.nextPositions[0], toCol: strategy.nextPositions[1], probability: strategy.probability});
+                }
+                policyListPlayer2.push({opponentPos: policies[i].opponentPositions, strategies: strategies});
+            }
+        }
         
-        return {arrows};
+        return {arrows, policies: [policyListPlayer1, policyListPlayer2]};
     } catch (error) {
         console.error("Error fetching data:", error);
         throw error;

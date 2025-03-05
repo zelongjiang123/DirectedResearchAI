@@ -1,4 +1,4 @@
-import { Arrow } from '../../components/configs';
+import { Arrow, player1Color, player2Color } from '../../components/configs';
 import MatrixGrid from '../../components/MatrixGrid';
 
 const arrowsPlayer1: Arrow[] = [
@@ -40,9 +40,9 @@ const OptimalStrategyPage: React.FC<OptimalStrategyPageProps> = ({
     <div className="optimal-strategyPage">
       <h1>Optimal Strategy</h1>
       <div>
-      { arrows.map((arrow, index)=>{
-        return <MatrixGrid key={`optimal-strategyPage-matrix-${index}`} arrowsPlayer1={[arrow[0]]} arrowsPlayer2={[arrow[1]]} header={`step ${index}`} isApplyNudge={true} />
-      })} 
+        {arrows.map((arrow, index) => {
+          return <MatrixGrid key={`optimal-strategyPage-matrix-${index}`} arrowsPlayer1={[arrow[0]]} arrowsPlayer2={[arrow[1]]} header={`step ${index}`} isApplyNudge={true} colorPlayer1={player1Color} colorPlayer2={player2Color} />
+        })}
       </div>
      
     </div>
