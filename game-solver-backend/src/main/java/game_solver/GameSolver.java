@@ -1,12 +1,16 @@
 package game_solver;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+
+import org.springframework.boot.autoconfigure.web.WebProperties.Resources.Chain.Strategy;
 
 public class GameSolver {
 
@@ -306,8 +310,10 @@ public class GameSolver {
         }
     }
 
-    public void calculateStrategies(double[][][] Q){
-        for (int state = 0; state < Q.length; state++) {
+    public List<GameStrategies> calculateStrategies(){
+        List<int[][]> positionsList = new LinkedList<>();
+        List<double[][]> ratioList = new LinkedList<>();
+        for (int state = 0; state < Q1.length; state++) {
             int[] positions = MathUtils.decimalToTrinary(state, 4);            
             double[][][] payoff_matrix = constructPayoffMatrix(positions);
             double[][] payoff_matrix_1 = payoff_matrix[0],
@@ -316,7 +322,61 @@ public class GameSolver {
             NashGameSolver nashGameSolver = new NashGameSolver(SMALL_NUM);
             GameOutcome outcome = nashGameSolver.calculateNash(payoff_matrix_1, 
                 MathUtils.transpose(payoff_matrix_2), false);
+            
+            positionsList.add(new int[][] {{positions[0], positions[1]}, {positions[2], positions[3]}});
+            ratioList.add(new double[][] {outcome.ratio_1, outcome.ratio_2});
         }
+        return constructGameStrategies(positionsList, ratioList);
+    }
+
+    public List<GameStrategies> constructGameStrategies(List<int[][]> positionsList, List<double[][]> ratioList){
+        List<GameStrategies> result = new LinkedList<>();
+        Map<String, List<PlayerTransitions>> player1Map = new HashMap<>();
+        Map<String, List<PlayerTransitions>> player2Map = new HashMap<>();
+
+        for(int i=0; i<positionsList.size(); i++){
+            int[][] positions = positionsList.get(i);
+            double[][] ratios = ratioList.get(i);
+            updatePositions(positions[0], ratios[0], Arrays.toString(positions[1]), player1Map);
+            updatePositions(positions[1], ratios[1], Arrays.toString(positions[0]), player2Map);
+        }
+        addPlayerTransitionsToGameStrategies(result, player1Map);
+        addPlayerTransitionsToGameStrategies(result, player2Map);
+        return result;
+    }
+
+    public void addPlayerTransitionsToGameStrategies( List<GameStrategies> result, Map<String, List<PlayerTransitions>> playerMap){
+        for(String key: playerMap.keySet()){
+            List<PlayerTransitions> transitions = playerMap.get(key);
+            int[] opponentPos = MathUtils.convertStringtoIntArray(key);
+            result.add(new GameStrategies(opponentPos, transitions));
+        }
+    }
+
+    public void updatePositions(int[] currentPos, double [] currentRatio, String opponentPosStr,  Map<String, List<PlayerTransitions>> currentMap){
+        List<PlayerTransitions> strategyList = currentMap.getOrDefault(opponentPosStr, new LinkedList<>());
+        for(int i=0; i<currentRatio.length; i++){
+            int[] nextPositions = Arrays.copyOf(currentPos, currentPos.length);
+            switch (i) {
+                case 0: // up
+                    nextPositions[0] -= 1;
+                    break;
+                case 1: // down
+                    nextPositions[0] += 1;
+                    break;
+                case 2: // left
+                    nextPositions[1] -= 1;
+                    break;
+                case 3: // right
+                    nextPositions[1] += 1;
+                    break;
+
+                default:
+                    break;
+            }
+            strategyList.add(new PlayerTransitions(currentPos, nextPositions, currentRatio[i]));
+        }
+        currentMap.put(opponentPosStr, strategyList);
     }
 
     /**

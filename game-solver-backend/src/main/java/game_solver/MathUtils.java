@@ -1,4 +1,7 @@
 package game_solver;
+
+import java.util.Arrays;
+
 public class MathUtils {
      /**
      * transpose a given matrix
@@ -72,4 +75,16 @@ public class MathUtils {
         return trinary;
     }
 
+
+    public static int[] convertStringtoIntArray(String str){
+        // Remove brackets and split by ", "
+        String[] parts = str.replaceAll("[\\[\\]]", "").split(", ");
+        
+        // Convert to int[]
+        int[] numbers = Arrays.stream(parts)
+                              .mapToInt(Integer::parseInt)
+                              .toArray();
+
+        return numbers;
+    }
 }
