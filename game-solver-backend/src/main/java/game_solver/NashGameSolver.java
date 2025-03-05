@@ -49,19 +49,19 @@ public class NashGameSolver {
     }
 
     /**
-     * calculate the adjusted ratio based on player's ratio and the opponent payoff matrix
-     * by calculating the expected payoff of the opponent's each strategy
+     * calculate the adjusted ratio based on both players' ratio and current player's payoff matrix
+     * by calculating the expected payoff of each action chosen by the current player given the opponent strategy
      * @param ratio
-     * @param payoff_matrix_opponent
+     * @param payoff
      */
-    public void calculateAdjustedRatio(double[] ratio, double[][] payoff_matrix_opponent){
+    public double[] calculateAdjustedRatio(double[] ratio, double[][] payoff, double[] opponent_ratio){
         double[] adjusted_ratio = Arrays.copyOf(ratio, ratio.length);
         
-        double[][] ratio_temp = new double[ratio.length][1];
-        for(int i=0; i<ratio.length; i++){
-            ratio_temp[i][0] = ratio[i];
+        double[][] ratio_temp = new double[opponent_ratio.length][1];
+        for(int i=0; i<opponent_ratio.length; i++){
+            ratio_temp[i][0] = opponent_ratio[i];
         }
-        double[][] payoffs = MathUtils.matrixMultiplication(payoff_matrix_opponent, ratio_temp);
+        double[][] payoffs = MathUtils.matrixMultiplication( MathUtils.matrixMultiplication(payoff, ratio_temp), new double[][] {ratio});
         
         double max = payoffs[0][0];
         for(int i=1; i<payoffs.length; i++){
@@ -93,11 +93,16 @@ public class NashGameSolver {
             sum += adjusted_ratio[i];
         }
 
+        // if(sum == 0.0){
+        //     printRatio(ratio);
+        // }
+
         for(int i=0; i<adjusted_ratio.length; i++){
             adjusted_ratio[i] /= sum;
         }
         
-        printRatio(adjusted_ratio);
+        // printRatio(adjusted_ratio);
+        return adjusted_ratio;
     }
 
     public void printRatio(double[] ratio){
