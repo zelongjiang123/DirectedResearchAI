@@ -10,8 +10,6 @@ import java.util.Random;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import org.springframework.boot.autoconfigure.web.WebProperties.Resources.Chain.Strategy;
-
 public class GameSolver {
 
     // 0: up, 1: down, 2: left, 3: right
@@ -425,7 +423,6 @@ public class GameSolver {
 
     public static void main(String[] args) {
         GameSolver gameSolver = new GameSolver();
-        // gameSolver.testCalculateNash();
         gameSolver.learning();
         gameSolver.visualizeAction();
     }
