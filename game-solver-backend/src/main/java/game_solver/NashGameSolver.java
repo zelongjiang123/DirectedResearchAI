@@ -119,8 +119,8 @@ public class NashGameSolver {
     /**
      * calculate the nash and return the expected payoff for both players
      * 
-     * @param matrix_1
-     * @param matrix_2
+     * @param matrix_1 row player is player 1
+     * @param matrix_2 row player is player 2
      * @return
      */
     public GameOutcome calculateNash(double[][] matrix_1, double[][] matrix_2, boolean print) {
@@ -219,8 +219,8 @@ public class NashGameSolver {
     /**
      * calculate the nash and return the expected payoff for both players with adjusted ratio
      * 
-     * @param matrix_1
-     * @param matrix_2
+     * @param matrix_1 // row player is player 1
+     * @param matrix_2 // row player is player 2
      * @return
      */
     public GameOutcome calculateNashWithAdjustedRatio(double[][] matrix_1, double[][] matrix_2, boolean print) {
