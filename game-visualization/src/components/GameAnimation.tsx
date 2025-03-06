@@ -5,7 +5,13 @@ const CELL_SIZE = 100;
 const DOT_RADIUS = 10;
 const DEFAULT_SPEED = 1.5; // Default animation duration in ms
 
-const GameAnimation: React.FC<{ positions1: [number, number][], positions2: [number, number][] }> = ({ positions1, positions2 }) => {
+interface GameAnimationProps{
+  positions1: [number, number][], 
+  positions2: [number, number][],
+}
+
+
+const GameAnimation: React.FC<GameAnimationProps> = ({ positions1, positions2 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [index, setIndex] = useState(0);
   const [speed, setSpeed] = useState(DEFAULT_SPEED);

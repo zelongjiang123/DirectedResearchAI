@@ -4,6 +4,7 @@ import { Arrow, PoliciesGivenOpponentPosition, Strategy } from "../components/co
 interface GetGameResultResponse {
     arrows: Arrow[][];
     policies: PoliciesGivenOpponentPosition[][];
+    positionsForAllPlayers: [number, number][][];
 }
 
 interface GetGameResultAPIResponse{
@@ -30,9 +31,11 @@ export async function getGameResult(): Promise<GetGameResultResponse> {
         let parsedResponse: GetGameResultAPIResponse = await response.json();
         console.log(parsedResponse);
         let arrows: Arrow[][] = [];
+        let positionsForAllPlayers: [number, number] [][] = [[], []];
         
         if(parsedResponse.optimalStrategies !== undefined){
             let positions = parsedResponse.optimalStrategies;
+            let positionsPlayer1: [number, number] [] = [], positionsPlayer2: [number, number] [] = [];
         
             for(let i=0; i<positions[0].length-1; i++){
                 arrows.push([
@@ -40,6 +43,14 @@ export async function getGameResult(): Promise<GetGameResultResponse> {
                     { fromRow: positions[1][i][0], fromCol: positions[1][i][1], toRow: positions[1][i + 1][0], toCol: positions[1][i + 1][1] }
                 ]);
             }
+
+            for(let i=0; i<positions[0].length; i++){
+                positionsPlayer1.push([positions[0][i][0], positions[0][i][1]]);
+                positionsPlayer2.push([positions[1][i][0], positions[1][i][1]]);
+            }
+
+            positionsForAllPlayers[0] = positionsPlayer1;
+            positionsForAllPlayers[1] = positionsPlayer2;
         }
 
 
@@ -64,7 +75,7 @@ export async function getGameResult(): Promise<GetGameResultResponse> {
             }
         }
         
-        return {arrows, policies: [policyListPlayer1, policyListPlayer2]};
+        return {arrows, policies: [policyListPlayer1, policyListPlayer2], positionsForAllPlayers};
     } catch (error) {
         console.error("Error fetching data:", error);
         throw error;

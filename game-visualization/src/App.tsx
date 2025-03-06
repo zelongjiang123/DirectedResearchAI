@@ -7,30 +7,36 @@ import NodesGraph from './components/NodesGraph';
 import { getGameResult } from './api_calls/apiCall';
 import { Arrow, PoliciesGivenOpponentPosition } from './components/configs';
 import LoadingPage from './pages/loading_page/LoadingPage';
-
+import GameAnimationPage from './pages/game_animation_page/GameAnimationPage';
 
 function App() {
   const [arrows, setArrows] = useState<Arrow[][]>([]);
   const [policies, setPolicies] = useState<PoliciesGivenOpponentPosition[][]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [positionsForAllPlayers, setPositionsForAllPlayers] = useState<[number, number][][]>([[], []]);
+
 
   const handleButtonClick = async () => {
     console.log("click");
     setLoading(true);
-    let {arrows, policies} = await getGameResult();
+    let {arrows, policies, positionsForAllPlayers} = await getGameResult();
     console.log(arrows)
     setArrows(arrows);
     setPolicies(policies);
+    setPositionsForAllPlayers(positionsForAllPlayers);
     setLoading(false);
   }
 
   return (
     <div className="App">
       { !loading && 
-      <div>
+      <div className='content'>
+        <div>
+        <button onClick={()=>{handleButtonClick();}}>Fetch Data</button>
+        </div>
+        <GameAnimationPage positions1={positionsForAllPlayers[0]} positions2={positionsForAllPlayers[1]}/>
         <OptimalStrategyPage arrows={arrows}/>
         <OptimalPolicyPage policies={policies} />
-        <button onClick={()=>{handleButtonClick();}}>Fetch Data</button>
       </div>
       }
       {loading && <LoadingPage/>}
