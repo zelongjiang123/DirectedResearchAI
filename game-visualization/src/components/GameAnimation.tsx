@@ -13,6 +13,7 @@ interface GameAnimationProps{
 
 const GameAnimation: React.FC<GameAnimationProps> = ({ positions1, positions2 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const ElapsedTimeRef = useRef(0); // store the ref of elapsed time to make the animation smoother when the user pause/unpause
   const [index, setIndex] = useState(0);
   const [speed, setSpeed] = useState(DEFAULT_SPEED);
   const [isRunning, setIsRunning] = useState(true);
@@ -31,8 +32,11 @@ const GameAnimation: React.FC<GameAnimationProps> = ({ positions1, positions2 })
     const animate = (timestamp: number) => {
       if (!isRunning) return;
 
-      if (startTime === null) startTime = timestamp;
-      const elapsed = timestamp - startTime;
+      let elapsed = ElapsedTimeRef.current;
+      if (startTime === null) {
+        startTime = timestamp - elapsed;
+      } else elapsed = timestamp - startTime;
+      ElapsedTimeRef.current = elapsed;
       const adjustedSpeed = 1000 / speed;
       const t = Math.min(elapsed / adjustedSpeed, 1);
 
@@ -56,6 +60,7 @@ const GameAnimation: React.FC<GameAnimationProps> = ({ positions1, positions2 })
           animationFrameId = requestAnimationFrame(animate);
         } else {
           setIndex((prev) => prev + 1);
+          ElapsedTimeRef.current = 0;
         }
       }
     };
@@ -63,7 +68,7 @@ const GameAnimation: React.FC<GameAnimationProps> = ({ positions1, positions2 })
     animationFrameId = requestAnimationFrame(animate);
 
     return () => cancelAnimationFrame(animationFrameId);
-  }, [index, positions1, positions2, speed, isRunning]);
+  }, [index, positions1, positions2, isRunning]);
 
   const drawGrid = (ctx: CanvasRenderingContext2D) => {
     ctx.strokeStyle = "black";
@@ -83,6 +88,12 @@ const GameAnimation: React.FC<GameAnimationProps> = ({ positions1, positions2 })
     ctx.arc(x * CELL_SIZE + CELL_SIZE / 2, y * CELL_SIZE + CELL_SIZE / 2, DOT_RADIUS, 0, Math.PI * 2);
     ctx.fill();
   };
+
+  const onRestart = () => {
+    setIndex(0); 
+    setIsRunning(true); 
+    ElapsedTimeRef.current = 0;
+  }
 
   return (
     <div>
@@ -104,7 +115,7 @@ const GameAnimation: React.FC<GameAnimationProps> = ({ positions1, positions2 })
         {isRunning ? "Pause" : "Resume"}
       </button>
 
-      <button onClick={() => { setIndex(0); setIsRunning(true); }}>
+      <button onClick={() => {onRestart();}}>
         Restart
       </button>
     </div>
