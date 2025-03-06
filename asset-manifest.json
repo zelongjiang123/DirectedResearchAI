@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/game-visualization/static/css/main.f855e6bc.css",
-    "main.js": "/game-visualization/static/js/main.7d936873.js",
-    "static/js/453.726ec061.chunk.js": "/game-visualization/static/js/453.726ec061.chunk.js",
-    "index.html": "/game-visualization/index.html",
-    "main.f855e6bc.css.map": "/game-visualization/static/css/main.f855e6bc.css.map",
-    "main.7d936873.js.map": "/game-visualization/static/js/main.7d936873.js.map",
-    "453.726ec061.chunk.js.map": "/game-visualization/static/js/453.726ec061.chunk.js.map"
+    "main.css": "/DirectedResearchAI/static/css/main.f855e6bc.css",
+    "main.js": "/DirectedResearchAI/static/js/main.ce6ab93d.js",
+    "static/js/453.726ec061.chunk.js": "/DirectedResearchAI/static/js/453.726ec061.chunk.js",
+    "index.html": "/DirectedResearchAI/index.html",
+    "main.f855e6bc.css.map": "/DirectedResearchAI/static/css/main.f855e6bc.css.map",
+    "main.ce6ab93d.js.map": "/DirectedResearchAI/static/js/main.ce6ab93d.js.map",
+    "453.726ec061.chunk.js.map": "/DirectedResearchAI/static/js/453.726ec061.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f855e6bc.css",
-    "static/js/main.7d936873.js"
+    "static/js/main.ce6ab93d.js"
   ]
 }
