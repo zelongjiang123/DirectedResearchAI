@@ -1,5 +1,6 @@
 package game_solver;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -9,6 +10,8 @@ import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public class GameSolver {
 
@@ -216,7 +219,7 @@ public class GameSolver {
     /**
      * learn the Q value
      */
-    public String learning() {
+    public String learning(SseEmitter emitter) {
         final int ITERATIONS = 100;
         List<Double> losses1 = new LinkedList<>(), losses2 = new LinkedList<>();
         StringBuilder str = new StringBuilder();
@@ -234,16 +237,24 @@ public class GameSolver {
             losses1.add(loss1);
             losses2.add(loss2);
 
-            str.append("Iteration " + i + " is complete, loss is " + loss1 + " " + loss2);
-            System.out.println("Iteration " + i + " is complete, loss is " + loss1 + " " + loss2);
+            String message = "Iteration " + i + " is complete, loss is " + loss1 + " " + loss2;
+            str.append(message);
+            System.out.println(message);
+            try {
+                if(emitter != null)
+                    emitter.send("{\"message\": \"" + message + "\"}");
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
 
-        SwingUtilities.invokeLater(() -> {
-            LineChart chart = new LineChart("Difference for Q1", losses1, new int[] {-1, 5});
-            chart.setSize(600, 400);
-            chart.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            chart.setVisible(true);
-        });
+        // SwingUtilities.invokeLater(() -> {
+        //     LineChart chart = new LineChart("Difference for Q1", losses1, new int[] {-1, 5});
+        //     chart.setSize(600, 400);
+        //     chart.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        //     chart.setVisible(true);
+        // });
 
         // SwingUtilities.invokeLater(() -> {
         //     LineChart chart = new LineChart("Difference for Q2", losses2, new int[] {-1, 5 });
@@ -423,7 +434,7 @@ public class GameSolver {
 
     public static void main(String[] args) {
         GameSolver gameSolver = new GameSolver();
-        gameSolver.learning();
+        gameSolver.learning(null);
         gameSolver.visualizeAction();
     }
 }
