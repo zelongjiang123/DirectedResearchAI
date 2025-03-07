@@ -2,7 +2,6 @@ package com.generate_api;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,7 +16,6 @@ public class API {
         return "Test API is working!";
     }
 
-    @CrossOrigin(origins = "http://localhost:3000") // Allow frontend requests
     @GetMapping("/api/game_result")
     public GetGameResultResponse getGameResult() {
         GameSolver gameSolver = new GameSolver();
