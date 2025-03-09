@@ -21,12 +21,7 @@ public class GameSolver {
     double[][][] Q2; // matrix for player 2
 
     // reward matrix is
-    /*
-     * 1 2 3
-     * 1 1 2
-     * 3 1 2
-     */
-    final int[][] REWARD = new int[][] { { 1, 2, 3 }, { 1, 1, 2 }, { 3, 1, 2 } };
+    int[][][] rewardMatrix;
 
     // reward matrix is
     /*
@@ -45,7 +40,8 @@ public class GameSolver {
     final int STATES = 81;
     final int ACTIONS = 4;
 
-    public GameSolver() {
+    public GameSolver(int[][][] rewardMatrix) {
+        this.rewardMatrix = rewardMatrix;
         Q1 = new double[STATES][ACTIONS][ACTIONS];
         Q2 = new double[STATES][ACTIONS][ACTIONS];
     }
@@ -164,11 +160,10 @@ public class GameSolver {
             int row1 = positions[0], col1 = positions[1], row2 = positions[2], col2 = positions[3];
             for (int action1 = 0; action1 < Q[0].length; action1++)
                 for (int action2 = 0; action2 < Q[0][0].length; action2++) {
-                    int reward = REWARD[row1][col1] - REWARD[row2][col2];
-                    // int reward = REWARD[row1][col1];
+                    int reward = rewardMatrix[row1][col1][player-1] - rewardMatrix[row2][col2][player-1];
+                    
                     if (player == 2) {
-                        reward = REWARD[row2][col2] - REWARD[row1][col1];
-                        // reward = REWARD_SPECIAL[row2][col2];
+                        reward = rewardMatrix[row2][col2][player-1] - rewardMatrix[row1][col1][player-1];
                     }
                     if (row1 == row2 && col1 == col2) {
                         if (player == 1)
@@ -425,7 +420,12 @@ public class GameSolver {
         int[][][] positions = findActions(new int[] {0, 0, 2, 2});
         
         JFrame frame = new JFrame("3x3 Grid with Moving Cars");
-        GameVisualization panel = new GameVisualization(positions, REWARD);
+        int[][] reward = new int[rewardMatrix.length][rewardMatrix[0].length];
+        for(int i=0; i<reward.length; i++)
+            for(int j=0; j<reward[0].length; j++){
+            reward[i][j] = rewardMatrix[i][j][0];
+        }
+        GameVisualization panel = new GameVisualization(positions, reward);
         frame.add(panel);
         frame.setSize(GameVisualization.GRID_SIZE * GameVisualization.CELL_SIZE + 15, GameVisualization.GRID_SIZE * GameVisualization.CELL_SIZE + 40);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -433,7 +433,13 @@ public class GameSolver {
     }
 
     public static void main(String[] args) {
-        GameSolver gameSolver = new GameSolver();
+        /*
+         * 1 2 3
+         * 1 1 2
+         * 3 1 2
+         */
+        final int[][][] rewardMatrix = new int[][][] { { {1, 1}, {2, 2}, {3, 3} }, { {1, 1}, {1, 1}, {2, 2} }, { {3, 3}, {1, 1}, {2, 2} } };
+        GameSolver gameSolver = new GameSolver(rewardMatrix);
         gameSolver.learning(null);
         gameSolver.visualizeAction();
     }
