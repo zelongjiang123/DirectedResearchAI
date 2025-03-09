@@ -7,6 +7,7 @@ import java.util.Queue;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import java.util.Random;
 
 public class NashGameSolver {
     double SMALL_NUM;
@@ -33,19 +34,23 @@ public class NashGameSolver {
 
         double[][] payoffs = MathUtils.matrixMultiplication(matrix, opponent_strategy_ratio);
         double max = payoffs[0][0];
-        int index = 0;
+        List<Integer> bestStrategies = new LinkedList<>();
+        bestStrategies.add(0);
         for (int i = 1; i < payoffs.length; i++) {
             // if(print && payoffs[i][0] != SMALL_NUM)
             //     System.out.println(max + " " + payoffs[i][0]);
             if (max < payoffs[i][0]) {
                 max = payoffs[i][0];
-                index = i;
+                bestStrategies = new LinkedList<>();
+                bestStrategies.add(i);
+            } else if(max == payoffs[i][0]){
+                bestStrategies.add(i);
             }
         }
 
-        // System.out.println(index);
-
-        return index;
+        Random random = new Random();
+        int index = random.nextInt(bestStrategies.size()); // Generates a random index
+        return bestStrategies.get(index);
     }
 
     /**
