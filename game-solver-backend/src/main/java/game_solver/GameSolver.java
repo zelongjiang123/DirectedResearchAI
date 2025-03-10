@@ -338,6 +338,13 @@ public class GameSolver {
         return new GamePolicies(constructGameStrategies(positionsList, ratioList), jointPolicies);
     }
 
+
+    /**
+     * construct the joint policy for frontend
+     * @param positions
+     * @param ratios
+     * @return
+     */
     public GameJointPolicy constructJointPolicy(int[][] positions, double [][] ratios){
         List<List<PlayerTransitions>> transitions = new LinkedList<>();
         for(int i=0; i<ratios.length; i++){
@@ -370,6 +377,12 @@ public class GameSolver {
         return new GameJointPolicy(positions, transitions);
     }
 
+    /**
+     * construct the policies given the opponent position for the frontend
+     * @param positionsList
+     * @param ratioList
+     * @return
+     */
     public List<GameStrategies> constructGameStrategies(List<int[][]> positionsList, List<double[][]> ratioList){
         List<GameStrategies> result = new LinkedList<>();
         Map<String, List<PlayerTransitions>> player1Map = new HashMap<>();
