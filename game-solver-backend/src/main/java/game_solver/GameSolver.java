@@ -314,9 +314,10 @@ public class GameSolver {
         }
     }
 
-    public List<GameStrategies> calculateStrategies(){
+    public GamePolicies calculateStrategies(){
         List<int[][]> positionsList = new LinkedList<>();
         List<double[][]> ratioList = new LinkedList<>();
+        List<GameJointPolicy> jointPolicies = new LinkedList<>();
         for (int state = 0; state < Q1.length; state++) {
             int[] positions = MathUtils.decimalToTrinary(state, 4);            
             double[][][] payoff_matrix = constructPayoffMatrix(positions);
@@ -327,10 +328,46 @@ public class GameSolver {
             GameOutcome outcome = nashGameSolver.calculateNash(payoff_matrix_1, 
                 MathUtils.transpose(payoff_matrix_2), false);
             
-            positionsList.add(new int[][] {{positions[0], positions[1]}, {positions[2], positions[3]}});
-            ratioList.add(new double[][] {outcome.ratio_1, outcome.ratio_2});
+            int[][] positionsForAllPlayers = new int[][] {{positions[0], positions[1]}, {positions[2], positions[3]}};
+            double [][] ratiosForAllPlayers = new double[][] {outcome.ratio_1, outcome.ratio_2};
+            positionsList.add(positionsForAllPlayers);
+            ratioList.add(ratiosForAllPlayers);
+
+            jointPolicies.add(constructJointPolicy(positionsForAllPlayers, ratiosForAllPlayers));
         }
-        return constructGameStrategies(positionsList, ratioList);
+        return new GamePolicies(constructGameStrategies(positionsList, ratioList), jointPolicies);
+    }
+
+    public GameJointPolicy constructJointPolicy(int[][] positions, double [][] ratios){
+        List<List<PlayerTransitions>> transitions = new LinkedList<>();
+        for(int i=0; i<ratios.length; i++){
+            List<PlayerTransitions> transitionsList = new LinkedList<>();
+            double[] currentRatio = ratios[i];
+            int[] currentPos = positions[i];
+            for(int j=0; j<currentRatio.length; j++){
+                int[] nextPositions = Arrays.copyOf(currentPos, currentPos.length);
+                switch (j) {
+                    case 0: // up
+                        nextPositions[0] -= 1;
+                        break;
+                    case 1: // down
+                        nextPositions[0] += 1;
+                        break;
+                    case 2: // left
+                        nextPositions[1] -= 1;
+                        break;
+                    case 3: // right
+                        nextPositions[1] += 1;
+                        break;
+    
+                    default:
+                        break;
+                }
+                transitionsList.add(new PlayerTransitions(currentPos, nextPositions, currentRatio[j]));
+            }
+            transitions.add(transitionsList);
+        }
+        return new GameJointPolicy(positions, transitions);
     }
 
     public List<GameStrategies> constructGameStrategies(List<int[][]> positionsList, List<double[][]> ratioList){

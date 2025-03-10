@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import game_solver.GameJointPolicy;
+import game_solver.GamePolicies;
 import game_solver.GameSolver;
 import game_solver.GameStrategies;
 
@@ -59,8 +61,8 @@ public class API {
                 GameSolver gameSolver = new GameSolver(rewardMatrix);
                 gameSolver.learning(emitter);
                 int[][][] optimal_strategies = gameSolver.findActions(new int[] {0, 0, 2, 2});
-                List<GameStrategies> optimal_policies = gameSolver.calculateStrategies();
-                GetGameResultResponse response = new GetGameResultResponse(optimal_strategies, optimal_policies);
+                GamePolicies policies = gameSolver.calculateStrategies();
+                GetGameResultResponse response = new GetGameResultResponse(optimal_strategies, policies.getPoliciesGivenOtherOpponent(), policies.getJointPolicies());
                 emitter.send(response, MediaType.APPLICATION_JSON);
                 emitter.send("{\"End\": \"Game Process End\"}");
                 emitter.complete();
@@ -77,9 +79,15 @@ public class API {
 class GetGameResultResponse{
     private int[][][] optimal_strategies;
     private List<GameStrategies> optimal_policies;
-    public GetGameResultResponse(int[][][] optimal_strategies, List<GameStrategies> optimal_policies){
+    private List<GameJointPolicy> jointPolicies;
+    public GetGameResultResponse(int[][][] optimal_strategies, List<GameStrategies> optimal_policies, List<GameJointPolicy> jointPolicies){
         this.optimal_strategies = optimal_strategies;
         this.optimal_policies = optimal_policies;
+        this.jointPolicies = jointPolicies;
+    }
+
+    public List<GameJointPolicy> getJointPolicies(){
+        return jointPolicies;
     }
 
     public int[][][] getOptimalStrategies(){
