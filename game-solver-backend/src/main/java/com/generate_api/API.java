@@ -1,10 +1,13 @@
 package com.generate_api;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import game_solver.GameJointPolicy;
@@ -17,12 +20,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @RestController
 public class API {
-    private int[][][] rewardMatrix = new int[][][] {};
+    // TODO: change this to a map that has the request session id
+    private final Map<String, int[][][]> rewardMatrixMap = new ConcurrentHashMap<>();
 
 
      // Define a test endpoint
@@ -37,10 +42,10 @@ public class API {
      * @return
      */
     @PostMapping(value = "/api/start_game", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> startGame(@RequestBody int[][][] rewardMatrix) {
-    
-        this.rewardMatrix = rewardMatrix;
-        return ResponseEntity.ok().build(); // Return session ID to the frontend
+    public ResponseEntity<String> startGame(@RequestBody int[][][] rewardMatrix) {
+        String sessionId = UUID.randomUUID().toString();
+        this.rewardMatrixMap.put(sessionId, rewardMatrix) ;
+        return ResponseEntity.ok(sessionId); // Return session ID to the frontend
     }
 
     /**
@@ -52,9 +57,23 @@ public class API {
      * @return
      */
     @GetMapping(value = "/api/game_result", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter getGameResult() {
+    public SseEmitter getGameResult(@RequestParam("sessionId") String sessionId) {
+        int[][][] rewardMatrix = rewardMatrixMap.getOrDefault(sessionId, null);
         SseEmitter emitter = new SseEmitter(1800000L);
         ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        if(rewardMatrix == null){
+            try {
+                emitter.send("{\"End\": \"Game Process End\"}");
+            } catch (IOException e) {
+                emitter.completeWithError(e);
+            }
+            emitter.complete();
+            executor.shutdown();
+            return emitter;
+        }
+
+        rewardMatrixMap.remove(sessionId);
 
         executor.execute(() -> {
             try {
