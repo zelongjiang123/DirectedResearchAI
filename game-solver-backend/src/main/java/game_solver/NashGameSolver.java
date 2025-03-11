@@ -48,9 +48,9 @@ public class NashGameSolver {
             }
         }
 
-        Random random = new Random();
-        int index = random.nextInt(bestStrategies.size()); // Generates a random index
-        return bestStrategies.get(index);
+        // Random random = new Random();
+        // int index = random.nextInt(bestStrategies.size()); // Generates a random index
+        return bestStrategies.get(0);
     }
 
     /**
@@ -127,75 +127,6 @@ public class NashGameSolver {
     }
 
     /**
-     * calculate the nash and return the expected payoff for both players
-     * 
-     * @param matrix_1 row player is player 1
-     * @param matrix_2 row player is player 2
-     * @return
-     */
-    public GameOutcome calculateNash(double[][] matrix_1, double[][] matrix_2, boolean print) {
-        int[] strategy1 = new int[matrix_1.length]; // strategy history of player 1 (row player)
-        int[] strategy2 = new int[matrix_2.length]; // strategy history of player 2 (column player)
-        int count = 1; // track the number of total history strategies (both player should have the
-                       // same count)
-
-        // start with a valid strategy (will not go out of bound)
-        outerLoop:
-        for(int i=0; i<matrix_1.length; i++)
-            for(int j=0; j<matrix_1[0].length; j++){
-                if(matrix_1[i][j] != SMALL_NUM && matrix_2[j][i] != SMALL_NUM){
-                    strategy1[i] = 1;
-                    strategy2[j] = 1;
-                    break outerLoop;
-                }
-                    
-            }
-
-        final int ITERATIONS = 3000;
-        for (int i = 0; i < ITERATIONS; i++) {
-            // calculate best response for player 1
-            int best_response_1 = calculateBestStrategy(matrix_1, strategy2, count, print);
-            // calculate best response for player 2
-            int best_response_2 = calculateBestStrategy(matrix_2, strategy1, count, print);
-
-            strategy1[best_response_1]++;
-            strategy2[best_response_2]++;
-
-            count++;
-        }
-
-        double[] ratio_1 = new double[matrix_1.length];
-        double[] ratio_2 = new double[matrix_2.length];
-        for (int i = 0; i < strategy1.length; i++) {
-            double ratio = strategy1[i] / (double) count;
-            ratio_1[i] = ratio;
-        }
-        for (int i = 0; i < strategy2.length; i++) {
-            double ratio = strategy2[i] / (double) count;
-            ratio_2[i] = ratio;
-        }
-
-        // printRatio(ratio_1);
-        // printRatio(ratio_2);
-
-        double payoff_1 = 0.0, payoff_2 = 0.0;
-        for (int i = 0; i < strategy1.length; i++)
-            for (int j = 0; j < strategy2.length; j++) {
-
-                if (matrix_1[i][j] != SMALL_NUM) {
-                    payoff_1 += ratio_1[i] * ratio_2[j] * matrix_1[i][j];
-                }
-                if (matrix_2[j][i] != SMALL_NUM) {
-                    payoff_2 += ratio_1[i] * ratio_2[j] * matrix_2[j][i];
-                }
-            }
-
-        // System.out.println("payoff 1 " + payoff_1);
-        // System.out.println("payoff 2 " + payoff_2);
-        return new GameOutcome(payoff_1, payoff_2, ratio_1, ratio_2);
-    }
-
-    /**
      * test the calculateNash function
      */
     public void testCalculateNash() {
@@ -213,8 +144,8 @@ public class NashGameSolver {
          * (2, -2), (1, -1), (0, 0), 
          * (0, 0), (0, 0), (1, -1), 
          */
-        double[][] matrix_1 = { { 2, -1, -1 }, { 2, 1, 0 }, { 0, 0, 1 } };
-        double[][] matrix_2 = { { -2, 1, 1 }, { -2, -1, 0 }, { 0, 0, -1 } };
+        // double[][] matrix_1 = { { 2, -1, -1 }, { 2, 1, 0 }, { 0, 0, 1 } };
+        // double[][] matrix_2 = { { -2, 1, 1 }, { -2, -1, 0 }, { 0, 0, -1 } };
 
         /**
          * (2, 1), (0, 0)
@@ -223,103 +154,102 @@ public class NashGameSolver {
         // double[][] matrix_1 = { { 3, 1 }, { 0, 4 } };
         // double[][] matrix_2 = { { 0, 1 }, { 0, 3 } };
 
-        calculateNashWithAdjustedRatio(matrix_1, MathUtils.transpose(matrix_2), false);
+        /**
+         * (0, 0), (0, 0)
+         * (0, 0), (10, -10)
+         */
+        double[][] matrix_1 = { { 0, 0 }, { 0, 10 } };
+        double[][] matrix_2 = { { 0, 0 }, { 0, -10 } };
+
+        calculateNash(matrix_1, MathUtils.transpose(matrix_2), true, true);
     }
 
     /**
-     * calculate the nash and return the expected payoff for both players with adjusted ratio
-     * 
-     * @param matrix_1 // row player is player 1
-     * @param matrix_2 // row player is player 2
+     * calculate the nash and return the expected payoff for both players
+     * @param matrix_1  row player is player 1
+     * @param matrix_2  row player is player 2
+     * @param useAdjustedRatio  true if return adjusted ratio
      * @return
      */
-    public GameOutcome calculateNashWithAdjustedRatio(double[][] matrix_1, double[][] matrix_2, boolean print) {
+    public GameOutcome calculateNash(double[][] matrix_1, double[][] matrix_2, boolean print, boolean useAdjustedRatio) {
 
-        // calculate the adjusted strategy ratio
-        int[] strategy1_adjusted = new int[matrix_1.length]; // strategy history of player 1 (row player)
-        int[] strategy2_adjusted = new int[matrix_2.length]; // strategy history of player 2 (column player)
-        Queue<Integer> strategy1 = new LinkedList<>(), strategy2 = new LinkedList<>();
+        int[] strategy1 = new int[matrix_1.length]; // strategy history of player 1 (row player)
+        int[] strategy2 = new int[matrix_2.length]; // strategy history of player 2 (column player)
+        int count1 = strategy1.length; // track the number of total history strategies 
+        int count2 = strategy2.length;
+
+        // start with a uniform distribution (both players will choose each action with probability 1/n where n is the number of strategies)
+        for(int i=0; i<strategy1.length; i++){
+            strategy1[i] = 1;
+        }
+        for(int i=0; i<strategy2.length; i++){
+            strategy2[i] = 1;
+        }
         
-        List<Double> best_responses_1 = new LinkedList<>(), best_responses_2 = new LinkedList<>();
-
-        // start with a valid strategy (will not go out of bound)
-        outerLoop:
-        for(int i=0; i<matrix_1.length; i++)
-            for(int j=0; j<matrix_1[0].length; j++){
-                if(matrix_1[i][j] != SMALL_NUM && matrix_2[j][i] != SMALL_NUM){
-                    best_responses_1.add((double) i);
-                    best_responses_2.add((double) j);
-                    strategy1_adjusted[i]++;
-                    strategy2_adjusted[j]++;
-                    strategy1.add(i);
-                    strategy2.add(j);
-                    break outerLoop;
-                }
-                    
-            }
-
         final int ITERATIONS = 3000;
         for (int i = 0; i < ITERATIONS; i++) {
             // calculate best response for player 1
-            int best_response_1 = calculateBestStrategy(matrix_1, strategy2_adjusted, strategy2.size(), print);
+            int best_response_1 = calculateBestStrategy(matrix_1, strategy2, count2, print);
             // calculate best response for player 2
-            int best_response_2 = calculateBestStrategy(matrix_2, strategy1_adjusted, strategy2.size(), print);
-            
-            best_responses_1.add((double) best_response_1);
-            best_responses_2.add((double) best_response_2);
+            int best_response_2 = calculateBestStrategy(matrix_2, strategy1, count1, print);
 
-            strategy1_adjusted[best_response_1]++;
-            strategy2_adjusted[best_response_2]++;
+            strategy1[best_response_1]++;
+            strategy2[best_response_2]++;
 
-            strategy1.add(best_response_1);
-            strategy2.add(best_response_2);
-            
-            if(strategy1.size() >= 500){
-                strategy1_adjusted[strategy1.poll()]--;
-                strategy2_adjusted[strategy2.poll()]--;
-            }
+            count1++;
+            count2++;
         }
-
-        visualizeBestResponse(best_responses_1, "best response 1");
-        visualizeBestResponse(best_responses_2, "best response 2");
 
         double[] ratio_1_adjusted = new double[matrix_1.length];
         double[] ratio_2_adjusted = new double[matrix_2.length];
+        double[] ratio_1 = new double[matrix_1.length];
+        double[] ratio_2 = new double[matrix_2.length];
 
-        for (int i = 0; i < strategy1_adjusted.length; i++) {
-            ratio_1_adjusted[i] = strategy1_adjusted[i] / (double) strategy1.size();
-            // System.out.print(strategy1_adjusted[i] + " ");
+
+        // do not consider the initial strategies where all strategies have 1 count
+        count1 -= strategy1.length;
+        count2 -= strategy2.length;
+        for (int i = 0; i < strategy1.length; i++) {
+            strategy1[i] -= 1;
+            ratio_1[i] = strategy1[i] / (double) count1;
         }
-        // System.out.println();
-        for (int i = 0; i < strategy2_adjusted.length; i++) {
-            ratio_2_adjusted[i] = strategy2_adjusted[i] / (double) strategy2.size();
-            // System.out.print(strategy1_adjusted[i] + " ");
+        for (int i = 0; i < strategy2.length; i++) {
+            strategy2[i] -= 1;
+            ratio_2[i] = strategy2[i] / (double) count2;
         }
-        // System.out.println();
-        // System.out.println(count_adjusted);
 
-        printRatio(ratio_1_adjusted);
-        printRatio(ratio_2_adjusted);        
+        ratio_1_adjusted = calculateAdjustedRatio(ratio_1, matrix_1, ratio_2);
+        ratio_2_adjusted = calculateAdjustedRatio(ratio_2, matrix_2, ratio_1);
 
-        // calculateAdjustedRatio(ratio_2, matrix_1);
-        // calculateAdjustedRatio(ratio_1, matrix_2);
+        if (print) {
+            System.out.println("ratio adjusted");
+            printRatio(ratio_1_adjusted);
+            printRatio(ratio_2_adjusted);
 
+            System.out.println("ratio");
+            printRatio(ratio_1);
+            printRatio(ratio_2);
+        }
+        
+        double payoff_1 = 0.0, payoff_2 = 0.0, payoff_1_adjusted = 0.0, payoff_2_adjusted = 0.0;
+        for (int i = 0; i < strategy1.length; i++)
+            for (int j = 0; j < strategy2.length; j++) {
 
-        double payoff_1_adjusted = 0.0, payoff_2_adjusted = 0.0;
-        for (int i = 0; i < strategy1_adjusted.length; i++)
-            for (int j = 0; j < ratio_2_adjusted.length; j++) {
                 if (matrix_1[i][j] != SMALL_NUM) {
                     payoff_1_adjusted += ratio_1_adjusted[i] * ratio_2_adjusted[j] * matrix_1[i][j];
+                    payoff_1 += ratio_1[i] * ratio_2[j] * matrix_1[i][j];
                 }
                 if (matrix_2[j][i] != SMALL_NUM) {
                     payoff_2_adjusted += ratio_1_adjusted[i] * ratio_2_adjusted[j] * matrix_2[j][i];
+                    payoff_2 += ratio_1[i] * ratio_2[j] * matrix_2[j][i];
                 }
             }
 
         // System.out.println("payoff 1 " + payoff_1);
         // System.out.println("payoff 2 " + payoff_2);
-        // return new GameOutcome(payoff_1, payoff_2, ratio_1, ratio_2);
-        return new GameOutcome(payoff_1_adjusted, payoff_2_adjusted, ratio_1_adjusted, ratio_2_adjusted);
+        if(useAdjustedRatio)
+            return new GameOutcome(payoff_1_adjusted, payoff_2_adjusted, ratio_1_adjusted, ratio_2_adjusted);
+        return new GameOutcome(payoff_1, payoff_2, ratio_1, ratio_2);
     }
 
     public static void main(String[] args) {

@@ -187,7 +187,7 @@ public class GameSolver {
 
                         NashGameSolver nashGameSolver = new NashGameSolver(SMALL_NUM);
                         GameOutcome outcome = nashGameSolver.calculateNash(payoff_matrix_1,
-                                MathUtils.transpose(payoff_matrix_2), false);
+                                MathUtils.transpose(payoff_matrix_2), false, true);
                         double payoff = (player == 1) ? outcome.payoff_1 : outcome.payoff_2;
                         temp_Q[state][action1][action2] = reward
                                 + DISCOUNT * payoff;
@@ -326,7 +326,7 @@ public class GameSolver {
 
             NashGameSolver nashGameSolver = new NashGameSolver(SMALL_NUM);
             GameOutcome outcome = nashGameSolver.calculateNash(payoff_matrix_1, 
-                MathUtils.transpose(payoff_matrix_2), false);
+                MathUtils.transpose(payoff_matrix_2), false, true);
             
             int[][] positionsForAllPlayers = new int[][] {{positions[0], positions[1]}, {positions[2], positions[3]}};
             double [][] ratiosForAllPlayers = new double[][] {outcome.ratio_1, outcome.ratio_2};
@@ -452,7 +452,7 @@ public class GameSolver {
             double[][] payoff_matrix_1 = payoff_matrix[0], payoff_matrix_2 = payoff_matrix[1];
            // printPayoffMatrices(payoff_matrix_1, payoff_matrix_2);
             NashGameSolver nashGameSolver = new NashGameSolver(SMALL_NUM);
-            GameOutcome outcome = nashGameSolver.calculateNash(payoff_matrix_1, MathUtils.transpose(payoff_matrix_2), false);
+            GameOutcome outcome = nashGameSolver.calculateNash(payoff_matrix_1, MathUtils.transpose(payoff_matrix_2), false, true);
             int strategy1 = chooseActionBasedOnProbability(outcome.ratio_1), 
             strategy2 = chooseActionBasedOnProbability(outcome.ratio_2);
 
