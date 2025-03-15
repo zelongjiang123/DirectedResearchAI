@@ -33,17 +33,19 @@ public class GameSolver {
     final int[][] REWARD_SPECIAL = new int[][] { { -4, 5, 1 }, { 0, -1, -2 }, { 4, 1, 2 } };; // for player 2
 
 
-    final int CRASH = 10;
-    final double DISCOUNT = 0.9;
+    int CRASH = 10;
+    double DISCOUNT = 0.9;
     final double SMALL_NUM = -10000.0;
     
     final int STATES = 81;
     final int ACTIONS = 4;
 
-    public GameSolver(int[][][] rewardMatrix) {
+    public GameSolver(int[][][] rewardMatrix, int crash, double discountRate) {
         this.rewardMatrix = rewardMatrix;
         Q1 = new double[STATES][ACTIONS][ACTIONS];
         Q2 = new double[STATES][ACTIONS][ACTIONS];
+        this.CRASH = crash;
+        this.DISCOUNT = discountRate;
     }
 
     /**
@@ -489,7 +491,7 @@ public class GameSolver {
          * 3 1 2
          */
         final int[][][] rewardMatrix = new int[][][] { { {1, 1}, {2, 2}, {3, 3} }, { {1, 1}, {1, 1}, {2, 2} }, { {3, 3}, {1, 1}, {2, 2} } };
-        GameSolver gameSolver = new GameSolver(rewardMatrix);
+        GameSolver gameSolver = new GameSolver(rewardMatrix, 10, 0.9);
         gameSolver.learning(null);
         gameSolver.visualizeAction();
     }

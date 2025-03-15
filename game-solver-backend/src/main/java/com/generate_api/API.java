@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import game_solver.GameJointPolicy;
 import game_solver.GamePolicies;
 import game_solver.GameSolver;
+import game_solver.GameSolverInput;
 import game_solver.GameStrategies;
 
 import org.springframework.http.MediaType;
@@ -26,8 +27,7 @@ import java.util.concurrent.Executors;
 
 @RestController
 public class API {
-    // TODO: change this to a map that has the request session id
-    private final Map<String, int[][][]> rewardMatrixMap = new ConcurrentHashMap<>();
+    private final Map<String, GameSolverInput> gameSolverInputMap = new ConcurrentHashMap<>();
 
 
      // Define a test endpoint
@@ -42,9 +42,9 @@ public class API {
      * @return
      */
     @PostMapping(value = "/api/start_game", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> startGame(@RequestBody int[][][] rewardMatrix) {
+    public ResponseEntity<String> startGame(@RequestBody GameSolverInput gameSolverInput) {
         String sessionId = UUID.randomUUID().toString();
-        this.rewardMatrixMap.put(sessionId, rewardMatrix) ;
+        this.gameSolverInputMap.put(sessionId, gameSolverInput);
         return ResponseEntity.ok(sessionId); // Return session ID to the frontend
     }
 
@@ -58,11 +58,11 @@ public class API {
      */
     @GetMapping(value = "/api/game_result", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter getGameResult(@RequestParam("sessionId") String sessionId) {
-        int[][][] rewardMatrix = rewardMatrixMap.getOrDefault(sessionId, null);
+        GameSolverInput gameSolverInput = gameSolverInputMap.getOrDefault(sessionId, null);
         SseEmitter emitter = new SseEmitter(1800000L);
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        if(rewardMatrix == null){
+        if(gameSolverInput == null){
             try {
                 emitter.send("{\"End\": \"Game Process End\"}");
             } catch (IOException e) {
@@ -73,11 +73,11 @@ public class API {
             return emitter;
         }
 
-        rewardMatrixMap.remove(sessionId);
+        gameSolverInputMap.remove(sessionId);
 
         executor.execute(() -> {
             try {
-                GameSolver gameSolver = new GameSolver(rewardMatrix);
+                GameSolver gameSolver = new GameSolver(gameSolverInput.getRewardMatrix(), gameSolverInput.getCrashValue(), gameSolverInput.getDiscountRate());
                 gameSolver.learning(emitter);
                 int[][][] optimal_strategies = gameSolver.findActions(new int[] {0, 0, 2, 2});
                 GamePolicies policies = gameSolver.calculateStrategies();
