@@ -316,10 +316,10 @@ public class GameSolver {
         }
     }
 
-    public GamePolicies calculateStrategies(){
+    public GameStrategies calculateStrategies(){
         List<int[][]> positionsList = new LinkedList<>();
         List<double[][]> ratioList = new LinkedList<>();
-        List<GameJointPolicy> jointPolicies = new LinkedList<>();
+        List<GameJointStrategy> jointPolicies = new LinkedList<>();
         for (int state = 0; state < Q1.length; state++) {
             int[] positions = MathUtils.decimalToTrinary(state, 4);            
             double[][][] payoff_matrix = constructPayoffMatrix(positions);
@@ -337,7 +337,7 @@ public class GameSolver {
 
             jointPolicies.add(constructJointPolicy(positionsForAllPlayers, ratiosForAllPlayers));
         }
-        return new GamePolicies(constructGameStrategies(positionsList, ratioList), jointPolicies);
+        return new GameStrategies(constructGameStrategies(positionsList, ratioList), jointPolicies);
     }
 
 
@@ -347,7 +347,7 @@ public class GameSolver {
      * @param ratios
      * @return
      */
-    public GameJointPolicy constructJointPolicy(int[][] positions, double [][] ratios){
+    public GameJointStrategy constructJointPolicy(int[][] positions, double [][] ratios){
         List<List<PlayerTransitions>> transitions = new LinkedList<>();
         for(int i=0; i<ratios.length; i++){
             List<PlayerTransitions> transitionsList = new LinkedList<>();
@@ -376,7 +376,7 @@ public class GameSolver {
             }
             transitions.add(transitionsList);
         }
-        return new GameJointPolicy(positions, transitions);
+        return new GameJointStrategy(positions, transitions);
     }
 
     /**
@@ -385,8 +385,8 @@ public class GameSolver {
      * @param ratioList
      * @return
      */
-    public List<GameStrategies> constructGameStrategies(List<int[][]> positionsList, List<double[][]> ratioList){
-        List<GameStrategies> result = new LinkedList<>();
+    public List<GameIndividualStrategies> constructGameStrategies(List<int[][]> positionsList, List<double[][]> ratioList){
+        List<GameIndividualStrategies> result = new LinkedList<>();
         Map<String, List<PlayerTransitions>> player1Map = new HashMap<>();
         Map<String, List<PlayerTransitions>> player2Map = new HashMap<>();
 
@@ -401,11 +401,11 @@ public class GameSolver {
         return result;
     }
 
-    public void addPlayerTransitionsToGameStrategies( List<GameStrategies> result, Map<String, List<PlayerTransitions>> playerMap){
+    public void addPlayerTransitionsToGameStrategies( List<GameIndividualStrategies> result, Map<String, List<PlayerTransitions>> playerMap){
         for(String key: playerMap.keySet()){
             List<PlayerTransitions> transitions = playerMap.get(key);
             int[] opponentPos = MathUtils.convertStringtoIntArray(key);
-            result.add(new GameStrategies(opponentPos, transitions));
+            result.add(new GameIndividualStrategies(opponentPos, transitions));
         }
     }
 

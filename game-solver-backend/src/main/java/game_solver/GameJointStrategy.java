@@ -3,7 +3,7 @@ package game_solver;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
-public class GameJointPolicy {
+public class GameJointStrategy {
     
     @JsonProperty("positions")
     private int[][] positions;
@@ -12,10 +12,10 @@ public class GameJointPolicy {
     private List<List<PlayerTransitions>> transitions;
 
     // Default constructor (required for deserialization)
-    public GameJointPolicy() {}
+    public GameJointStrategy() {}
 
     // Constructor
-    public GameJointPolicy(int[][] positions, List<List<PlayerTransitions>> transitions) {
+    public GameJointStrategy(int[][] positions, List<List<PlayerTransitions>> transitions) {
         this.positions = positions;
         this.transitions = transitions;
     }

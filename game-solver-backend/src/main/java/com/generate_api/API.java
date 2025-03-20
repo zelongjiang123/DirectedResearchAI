@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import game_solver.GameJointPolicy;
-import game_solver.GamePolicies;
+import game_solver.GameJointStrategy;
+import game_solver.GameStrategies;
 import game_solver.GameSolver;
 import game_solver.GameSolverInput;
-import game_solver.GameStrategies;
+import game_solver.GameIndividualStrategies;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -80,8 +80,8 @@ public class API {
                 GameSolver gameSolver = new GameSolver(gameSolverInput.getRewardMatrix(), gameSolverInput.getCrashValue(), gameSolverInput.getDiscountRate());
                 gameSolver.learning(emitter);
                 int[][][] optimal_strategies = gameSolver.findActions(new int[] {0, 0, 2, 2});
-                GamePolicies policies = gameSolver.calculateStrategies();
-                GetGameResultResponse response = new GetGameResultResponse(optimal_strategies, policies.getPoliciesGivenOtherOpponent(), policies.getJointPolicies());
+                GameStrategies policies = gameSolver.calculateStrategies();
+                GetGameResultResponse response = new GetGameResultResponse(optimal_strategies, policies.getStrategiesGivenOtherOpponent(), policies.getJointStrategies());
                 emitter.send(response, MediaType.APPLICATION_JSON);
                 emitter.send("{\"End\": \"Game Process End\"}");
                 emitter.complete();
@@ -96,24 +96,24 @@ public class API {
 
 
 class GetGameResultResponse{
-    private int[][][] optimal_strategies;
-    private List<GameStrategies> optimal_policies;
-    private List<GameJointPolicy> jointPolicies;
-    public GetGameResultResponse(int[][][] optimal_strategies, List<GameStrategies> optimal_policies, List<GameJointPolicy> jointPolicies){
-        this.optimal_strategies = optimal_strategies;
+    private int[][][] optimal_policies;
+    private List<GameIndividualStrategies> optimal_strategies;
+    private List<GameJointStrategy> joint_strategies;
+    public GetGameResultResponse(int[][][] optimal_policies, List<GameIndividualStrategies> optimal_strategies, List<GameJointStrategy> joint_strategies){
         this.optimal_policies = optimal_policies;
-        this.jointPolicies = jointPolicies;
+        this.optimal_strategies = optimal_strategies;
+        this.joint_strategies = joint_strategies;
     }
 
-    public List<GameJointPolicy> getJointPolicies(){
-        return jointPolicies;
+    public List<GameJointStrategy> getJointStrategies(){
+        return joint_strategies;
     }
 
-    public int[][][] getOptimalStrategies(){
-        return this.optimal_strategies;
-    }
-
-    public List<GameStrategies> getOptimalPolicies(){
+    public int[][][] getOptimalPolicies(){
         return this.optimal_policies;
+    }
+
+    public List<GameIndividualStrategies> getOptimalStrategies(){
+        return this.optimal_strategies;
     }
 }

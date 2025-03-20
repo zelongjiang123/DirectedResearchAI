@@ -2,37 +2,20 @@ package game_solver;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class GameStrategies {
-    @JsonProperty("opponentPositions")
-    private int[] opponentPositions;
+    List<GameIndividualStrategies> strategiesGivenOtherOpponent;
+    List<GameJointStrategy> jointStrategies;
 
-    @JsonProperty("transitions")
-    private List<PlayerTransitions> transitions;
-
-    // Constructor
-    public GameStrategies(int[] opponentPositions, List<PlayerTransitions> transitions) {
-        this.opponentPositions = opponentPositions;
-        this.transitions = transitions;
+    public GameStrategies(List<GameIndividualStrategies> strategiesGivenOtherOpponent, List<GameJointStrategy> jointStrategies){
+        this.strategiesGivenOtherOpponent = strategiesGivenOtherOpponent;
+        this.jointStrategies = jointStrategies;
     }
 
-    // Getters
-    public int[] getOpponentPositions() {
-        return opponentPositions;
+    public List<GameIndividualStrategies> getStrategiesGivenOtherOpponent(){
+        return strategiesGivenOtherOpponent;
     }
 
-    public List<PlayerTransitions> getTransitions() {
-        return transitions;
-    }
-
-    // Setters
-    public void setOpponentPositions(int[] opponentPositions) {
-        this.opponentPositions = opponentPositions;
-    }
-
-    public void setTransitions(List<PlayerTransitions>transitions) {
-        this.transitions = transitions;
+    public List<GameJointStrategy> getJointStrategies(){
+        return jointStrategies;
     }
 }
-
