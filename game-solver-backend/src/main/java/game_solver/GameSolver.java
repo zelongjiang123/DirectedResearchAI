@@ -201,6 +201,12 @@ public class GameSolver {
         return temp_Q;
     }
 
+    /**
+     * calculate the average Q matrix difference and use it as loss
+     * @param curr_Q
+     * @param prev_Q
+     * @return
+     */
     public double calculateAverageQDifference(double[][][] curr_Q, double[][][] prev_Q){
         int count = STATES * ACTIONS * ACTIONS;
         double total_diff = 0.0;
@@ -215,6 +221,7 @@ public class GameSolver {
 
     /**
      * learn the Q value
+     * @param emitter the sse emitter that send live updates to the frontend
      */
     public String learning(SseEmitter emitter) {
         final int ITERATIONS = 100;
@@ -316,10 +323,14 @@ public class GameSolver {
         }
     }
 
+    /**
+     * calculate both the joint strategies and the individual strategies (given the opponent position)
+     * @return
+     */
     public GameStrategies calculateStrategies(){
         List<int[][]> positionsList = new LinkedList<>();
         List<double[][]> ratioList = new LinkedList<>();
-        List<GameJointStrategy> jointPolicies = new LinkedList<>();
+        List<GameJointStrategy> jointStrategies = new LinkedList<>();
         for (int state = 0; state < Q1.length; state++) {
             int[] positions = MathUtils.decimalToTrinary(state, 4);            
             double[][][] payoff_matrix = constructPayoffMatrix(positions);
@@ -335,19 +346,19 @@ public class GameSolver {
             positionsList.add(positionsForAllPlayers);
             ratioList.add(ratiosForAllPlayers);
 
-            jointPolicies.add(constructJointPolicy(positionsForAllPlayers, ratiosForAllPlayers));
+            jointStrategies.add(constructJointStrategy(positionsForAllPlayers, ratiosForAllPlayers));
         }
-        return new GameStrategies(constructGameStrategies(positionsList, ratioList), jointPolicies);
+        return new GameStrategies(constructIndividualGameStrategies(positionsList, ratioList), jointStrategies);
     }
 
 
     /**
-     * construct the joint policy for frontend
+     * construct the joint strategies for frontend
      * @param positions
      * @param ratios
      * @return
      */
-    public GameJointStrategy constructJointPolicy(int[][] positions, double [][] ratios){
+    public GameJointStrategy constructJointStrategy(int[][] positions, double [][] ratios){
         List<List<PlayerTransitions>> transitions = new LinkedList<>();
         for(int i=0; i<ratios.length; i++){
             List<PlayerTransitions> transitionsList = new LinkedList<>();
@@ -380,12 +391,12 @@ public class GameSolver {
     }
 
     /**
-     * construct the policies given the opponent position for the frontend
+     * construct the individual strategies given the opponent position for the frontend
      * @param positionsList
      * @param ratioList
      * @return
      */
-    public List<GameIndividualStrategies> constructGameStrategies(List<int[][]> positionsList, List<double[][]> ratioList){
+    public List<GameIndividualStrategies> constructIndividualGameStrategies(List<int[][]> positionsList, List<double[][]> ratioList){
         List<GameIndividualStrategies> result = new LinkedList<>();
         Map<String, List<PlayerTransitions>> player1Map = new HashMap<>();
         Map<String, List<PlayerTransitions>> player2Map = new HashMap<>();
