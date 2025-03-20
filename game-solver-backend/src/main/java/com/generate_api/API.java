@@ -79,9 +79,9 @@ public class API {
             try {
                 GameSolver gameSolver = new GameSolver(gameSolverInput.getRewardMatrix(), gameSolverInput.getCrashValue(), gameSolverInput.getDiscountRate());
                 gameSolver.learning(emitter);
-                int[][][] optimal_strategies = gameSolver.findActions(new int[] {0, 0, 2, 2});
-                GameStrategies policies = gameSolver.calculateStrategies();
-                GetGameResultResponse response = new GetGameResultResponse(optimal_strategies, policies.getStrategiesGivenOtherOpponent(), policies.getJointStrategies());
+                int[][][] optimal_policies = gameSolver.findActions(new int[] {0, 0, 2, 2});
+                GameStrategies strategies = gameSolver.calculateStrategies();
+                GetGameResultResponse response = new GetGameResultResponse(optimal_policies, strategies.getStrategiesGivenOtherOpponent(), strategies.getJointStrategies());
                 emitter.send(response, MediaType.APPLICATION_JSON);
                 emitter.send("{\"End\": \"Game Process End\"}");
                 emitter.complete();
