@@ -26,25 +26,26 @@ class NashGameSolver:
         plt.show()
 
     def calculate_nash(self, matrix_1: np.ndarray, matrix_2: np.ndarray) -> Tuple[float, float, np.ndarray, np.ndarray] :
-        strategy1 = np.zeros(len(matrix_1), dtype=int)
-        strategy2 = np.zeros(len(matrix_2), dtype=int)
-        count = 1
+        strategy1 = np.ones(len(matrix_1), dtype=int)
+        strategy2 = np.ones(len(matrix_2), dtype=int)
+        count1 = len(strategy1)
+        count2 = len(strategy2)
 
-        for i in range(len(matrix_1)):
-            for j in range(len(matrix_1[0])):
-                if matrix_1[i][j] != self.SMALL_NUM and matrix_2[j][i] != self.SMALL_NUM:
-                    strategy1[i] = 1
-                    strategy2[j] = 1
-                    break
-            else:
-                continue
-            break
+        # for i in range(len(matrix_1)):
+        #     for j in range(len(matrix_1[0])):
+        #         if matrix_1[i][j] != self.SMALL_NUM and matrix_2[j][i] != self.SMALL_NUM:
+        #             strategy1[i] = 1
+        #             strategy2[j] = 1
+        #             break
+        #     else:
+        #         continue
+        #     break
 
 
-        ITERATIONS = 3000
+        ITERATIONS = 1000
         for _ in range(ITERATIONS):
-            best_response_1 = self.calculate_best_strategy(matrix_1, strategy2, count)
-            best_response_2 = self.calculate_best_strategy(matrix_2, strategy1, count)
+            best_response_1 = self.calculate_best_strategy(matrix_1, strategy2, count2)
+            best_response_2 = self.calculate_best_strategy(matrix_2, strategy1, count1)
 
 
             # print(best_response_1)
@@ -52,22 +53,31 @@ class NashGameSolver:
 
             strategy1[best_response_1] += 1
             strategy2[best_response_2] += 1
-            count += 1
+            count1 += 1
+            count2 += 1
 
-        ratio_1 = strategy1 / count
-        ratio_2 = strategy2 / count
+        count1 -= len(strategy1)
+        count2 -= len(strategy2)
+        strategy1 -= 1
+        strategy2 -= 1
+
+        ratio_1 = strategy1 / count1
+        ratio_2 = strategy2 / count2
 
         # self.print_ratio(ratio_1)
         # self.print_ratio(ratio_2)
 
-        payoff_1: float = 0.0
-        payoff_2: float = 0.0
-        for i in range(len(strategy1)):
-            for j in range(len(strategy2)):
-                if matrix_1[i][j] != self.SMALL_NUM:
-                    payoff_1 += ratio_1[i] * ratio_2[j] * matrix_1[i][j]
-                if matrix_2[j][i] != self.SMALL_NUM:
-                    payoff_2 += ratio_1[i] * ratio_2[j] * matrix_2[j][i]
+        # payoff_1: float = 0.0
+        # payoff_2: float = 0.0
+        # for i in range(len(strategy1)):
+        #     for j in range(len(strategy2)):
+        #         # if matrix_1[i][j] != self.SMALL_NUM:
+        #             payoff_1 += ratio_1[i] * ratio_2[j] * matrix_1[i][j]
+        #         # if matrix_2[j][i] != self.SMALL_NUM:
+        #             payoff_2 += ratio_1[i] * ratio_2[j] * matrix_2[j][i]
+
+        payoff_1: float = np.dot(ratio_1, np.dot(matrix_1, ratio_2))
+        payoff_2: float = np.dot(ratio_1, np.dot(matrix_2.T, ratio_2))
 
         return payoff_1, payoff_2, ratio_1, ratio_2
 
@@ -95,7 +105,8 @@ class NashGameSolver:
         ]
 
         start_time = time.time()
-        self.calculate_nash(matrix_1, np.transpose(matrix_2))
+        payoff1, payoff2, ratio1, ratio2 = self.calculate_nash(matrix_1, np.transpose(matrix_2))
+        print(ratio1, ratio2)
         end_time = time.time()
         print("execution time is", (end_time - start_time) * 1000, "ms")
 
