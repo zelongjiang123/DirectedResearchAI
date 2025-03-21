@@ -77,7 +77,7 @@ public class API {
 
         executor.execute(() -> {
             try {
-                GameSolver gameSolver = new GameSolver(gameSolverInput.getRewardMatrix(), gameSolverInput.getCrashValue(), gameSolverInput.getDiscountRate());
+                GameSolver gameSolver = new GameSolver(gameSolverInput);
                 gameSolver.learning(emitter);
                 GameStrategies strategies = gameSolver.calculateStrategies();
                 GetGameResultResponse response = new GetGameResultResponse(strategies.getStrategiesGivenOtherOpponent(), strategies.getJointStrategies());

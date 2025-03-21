@@ -13,6 +13,10 @@ import javax.swing.SwingUtilities;
 
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+enum GameType {
+    Zero_Sum, General_Sum
+}
+
 public class GameSolver {
 
     // 0: up, 1: down, 2: left, 3: right
@@ -40,12 +44,22 @@ public class GameSolver {
     final int STATES = 81;
     final int ACTIONS = 4;
 
-    public GameSolver(int[][][] rewardMatrix, int crash, double discountRate) {
-        this.rewardMatrix = rewardMatrix;
+    GameType gameType = GameType.Zero_Sum;
+
+    public GameSolver(GameSolverInput gameSolverInput) {
+        this.rewardMatrix = gameSolverInput.getRewardMatrix();
         Q1 = new double[STATES][ACTIONS][ACTIONS];
         Q2 = new double[STATES][ACTIONS][ACTIONS];
-        this.CRASH = crash;
-        this.DISCOUNT = discountRate;
+        this.CRASH = gameSolverInput.getCrashValue();
+        this.DISCOUNT = gameSolverInput.getDiscountRate();
+
+        if(gameSolverInput.getGameType().equals("Zero Sum")) {
+            System.out.println("Zero Sum");
+            gameType = GameType.Zero_Sum;
+        } else {
+            System.out.println("General Sum");
+            gameType = GameType.General_Sum;
+        }
     }
 
     /**
@@ -163,9 +177,12 @@ public class GameSolver {
             for (int action1 = 0; action1 < Q[0].length; action1++)
                 for (int action2 = 0; action2 < Q[0][0].length; action2++) {
                     int reward = rewardMatrix[row1][col1][player-1] - rewardMatrix[row2][col2][player-1];
-                    
+                    if(gameType == GameType.General_Sum)
+                        reward = rewardMatrix[row1][col1][player-1];
                     if (player == 2) {
                         reward = rewardMatrix[row2][col2][player-1] - rewardMatrix[row1][col1][player-1];
+                        if(gameType == GameType.General_Sum)
+                            reward = rewardMatrix[row2][col2][player-1];
                     }
                     if (row1 == row2 && col1 == col2) {
                         if (player == 1)
@@ -502,7 +519,7 @@ public class GameSolver {
          * 3 1 2
          */
         final int[][][] rewardMatrix = new int[][][] { { {1, 1}, {2, 2}, {3, 3} }, { {1, 1}, {1, 1}, {2, 2} }, { {3, 3}, {1, 1}, {2, 2} } };
-        GameSolver gameSolver = new GameSolver(rewardMatrix, 10, 0.9);
+        GameSolver gameSolver = new GameSolver(new GameSolverInput(rewardMatrix, 10, 0.9, "Zero Sum"));
         gameSolver.learning(null);
         gameSolver.visualizeAction();
     }
