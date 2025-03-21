@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import copy
 import math
 from typing import Tuple
-from python.math_utils import decimal_to_trinary, trinary_to_decimal
-from python.nash_game_solver import NashGameSolver
+from math_utils import decimal_to_trinary, trinary_to_decimal
+from nash_game_solver import NashGameSolver
 import multiprocessing
 
 class GameSolver:
